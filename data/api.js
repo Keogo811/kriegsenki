@@ -44,7 +44,6 @@ async function chargerActesParArc(arcId) {
     return data;
 }
 
-
 async function chargerActe(id) {
     const { data, error } = await sb
         .from('actes')
@@ -56,4 +55,8 @@ async function chargerActe(id) {
         throw error;
     }
     return data;
+}
+
+async function chargerActesDuMemeArc(arcId) {
+    return chargerActesParArc(arcId);
 }

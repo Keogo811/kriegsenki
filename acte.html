@@ -581,6 +581,8 @@
 <script src="data/api.js"></script>
 
 <script>
+    // On enveloppe tout dans une fonction : elle sera appelée
+    // au chargement ET à chaque changement de "#" dans l'URL.
     async function afficherActe() {
         const id = window.location.hash.slice(1);
 
@@ -606,33 +608,25 @@
             return;
         }
 
-        let arc = null;
-        try {
-            arc = await chargerArc(acte.arc_id);
-        } catch (err) {
-            console.error(err);
-        }
+        const arc = await chargerArc(acte.arc_id);
 
         if (!arc) {
             contexteEl.textContent = "";
-            titreEl.textContent = acte.titre;
-            texteEl.innerHTML = '<p class="error">L\'arc parent est introuvable.</p>';
+            titreEl.textContent = "Arc introuvable pour cet acte";
+            texteEl.innerHTML = "";
             return;
         }
 
         contexteEl.textContent = arc.titre + " · Acte " + acte.numero;
         titreEl.textContent = acte.titre;
+
         backLink.href = "arc.html#" + arc.id;
         backLink.textContent = "← Retour à " + arc.titre;
+
         document.title = acte.titre + " — " + arc.titre;
 
-        // --- Navigation entre actes du même arc ---
-        let actesDeLArc = [];
-        try {
-            actesDeLArc = await chargerActesParArc(arc.id);
-        } catch (err) {
-            console.error(err);
-        }
+        // --- Navigation entre les actes du même arc ---
+        const actesDeLArc = await chargerActesDuMemeArc(arc.id);
 
         const indexCourant = actesDeLArc.findIndex(function (a) { return a.id === acte.id; });
         const actePrec = indexCourant > 0 ? actesDeLArc[indexCourant - 1] : null;
@@ -660,35 +654,41 @@
             return lien;
         }
 
-        if (actePrec) navContainer.appendChild(creerLienNav(actePrec, "prev"));
-        if (acteSuiv) navContainer.appendChild(creerLienNav(acteSuiv, "next"));
+        if (actePrec) {
+            navContainer.appendChild(creerLienNav(actePrec, "prev"));
+        }
+        if (acteSuiv) {
+            navContainer.appendChild(creerLienNav(acteSuiv, "next"));
+        }
 
         // --- Affichage du texte ---
-        const texte = acte.contenu || "";
-        const paragraphes = texte
+        texteEl.innerHTML = "";
+
+        const contenu = acte.contenu || "";
+        if (contenu.trim().length === 0) {
+            texteEl.innerHTML = '<p class="loading">Aucun contenu pour cet acte.</p>';
+            return;
+        }
+
+        const paragraphes = contenu
             .split(/\r?\n\s*\r?\n/)
             .map(function (p) { return p.trim(); })
             .filter(function (p) { return p.length > 0; });
 
-        texteEl.innerHTML = "";
+        paragraphes.forEach(function (p) {
+            if (p === "---") {
+                const sep = document.createElement("p");
+                sep.className = "separateur";
+                sep.textContent = "• • •";
+                texteEl.appendChild(sep);
+                return;
+            }
 
-        if (paragraphes.length === 0) {
-            texteEl.innerHTML = '<p class="loading">Aucun contenu pour cet acte.</p>';
-        } else {
-            paragraphes.forEach(function (p) {
-                if (p === "---") {
-                    const sep = document.createElement("p");
-                    sep.className = "separateur";
-                    sep.textContent = "• • •";
-                    texteEl.appendChild(sep);
-                    return;
-                }
-                const para = document.createElement("p");
-                para.textContent = p;
-                para.style.whiteSpace = "pre-line";
-                texteEl.appendChild(para);
-            });
-        }
+            const para = document.createElement("p");
+            para.textContent = p;
+            para.style.whiteSpace = "pre-line";
+            texteEl.appendChild(para);
+        });
 
         window.scrollTo({ top: 0, behavior: "instant" });
     }
