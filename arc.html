@@ -132,6 +132,65 @@
             line-height: 1.7;
         }
 
+        .section-title {
+            font-size: 18px;
+            font-weight: normal;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin: 40px 0 22px;
+        }
+
+        .actes {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .acte-row {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            padding: 14px 20px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 168, 184, 0.15);
+            border-left: 2px solid var(--silver-soft);
+            border-radius: 3px;
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.25s ease, border-color 0.25s ease;
+        }
+
+        .acte-row:hover {
+            background: var(--card-hover);
+            border-left-color: var(--red-bright);
+        }
+
+        .acte-num {
+            font-family: Georgia, serif;
+            color: var(--silver);
+            font-size: 14px;
+            letter-spacing: 1px;
+            min-width: 40px;
+        }
+
+        .acte-titre {
+            font-size: 16px;
+            color: var(--heading);
+            flex: 1;
+        }
+
+        .acte-statut {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .acte-statut.publie { color: var(--alice); }
+        .acte-statut.redaction { color: var(--mauve); }
+        .acte-statut.brouillon { color: var(--text-soft); }
+
+
         .empty-note {
             color: var(--text-soft);
             font-size: 15px;
@@ -389,8 +448,10 @@
 
     <p class="arc-description" id="arc-description"></p>
 
-    <p class="empty-note">
-        Les Actes de cet arc apparaîtront ici dans une prochaine étape.
+    <h2 class="section-title">Actes</h2>
+    <div class="actes" id="actes-container"></div>
+    <p class="empty-note" id="actes-vide" style="display:none;">
+        Aucun acte pour cet arc pour l'instant.
     </p>
 </main>
 
@@ -522,6 +583,7 @@
 
 <!-- CHARGEMENT DES DONNÉES + AFFICHAGE DE L'ARC -->
 <script src="data/arcs.js"></script>
+<script src="data/actes.js"></script>
 <script>
     const STATUTS = {
         publie:    { texte: "Publié" },
@@ -556,6 +618,44 @@
 
         // Change aussi le titre de l'onglet
         document.title = arc.titre + " — Krieg Senki";
+    }
+
+    // --- Affichage des Actes de cet arc ---
+    const actesContainer = document.getElementById("actes-container");
+    const actesVide = document.getElementById("actes-vide");
+
+    if (arc) {
+        const actesDeLArc = ACTES
+            .filter(function (a) { return a.arcId === arc.id; })
+            .sort(function (a, b) { return a.numero - b.numero; });
+
+        if (actesDeLArc.length === 0) {
+            actesVide.style.display = "block";
+        } else {
+            actesDeLArc.forEach(function (acte) {
+                const row = document.createElement("a");
+                row.className = "acte-row";
+                row.href = "#"; // cliquable plus tard
+
+                const num = document.createElement("span");
+                num.className = "acte-num";
+                num.textContent = "Acte " + acte.numero;
+                row.appendChild(num);
+
+                const titre = document.createElement("span");
+                titre.className = "acte-titre";
+                titre.textContent = acte.titre;
+                row.appendChild(titre);
+
+                const statutInfo = STATUTS[acte.statut] || { texte: acte.statut };
+                const statut = document.createElement("span");
+                statut.className = "acte-statut " + acte.statut;
+                statut.textContent = statutInfo.texte;
+                row.appendChild(statut);
+
+                actesContainer.appendChild(row);
+            });
+        }
     }
 
     // Bouton retour en haut
