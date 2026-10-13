@@ -14,8 +14,8 @@
 const ARCS = [
 
     {
-        id: "arc-1-esclave",
-        titre: "Arc 1 — Σκλάβος (Esclave)",
+        id: "a1",
+        titre: "Arc 1 - Σκλάβος (Esclave)",
         statut: "publie",
         synopsisId: "a1",
         description: "Dans les champs de labeur, un garçon sans nom croise son double féminin. Un nom, une raison d'exister."

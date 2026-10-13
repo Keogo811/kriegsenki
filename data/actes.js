@@ -15,12 +15,12 @@
 const ACTES = [
 
     // --- Arc 1 : Esclave ---
-    { id: "a1-1", arcId: "arc-1-esclave", numero: 1, titre: "La Seconde Chance d'Altaïr", statut: "publie" },
-    { id: "a1-2", arcId: "arc-1-esclave", numero: 2, titre: "Esclave", statut: "publie" },
-    { id: "a1-3", arcId: "arc-1-esclave", numero: 3, titre: "Ia et Io", statut: "publie" },
-    { id: "a1-4", arcId: "arc-1-esclave", numero: 4, titre: "Lien Trouble", statut: "publie" },
-    { id: "a1-5", arcId: "arc-1-esclave", numero: 5, titre: "Ni Mieux, ni Pire", statut: "publie" },
-    { id: "a1-6", arcId: "arc-1-esclave", numero: 6, titre: "Sans Affect", statut: "publie" },
+    { id: "a1-1", arcId: "a1", numero: 1, titre: "La Seconde Chance d'Altaïr", statut: "publie" },
+    { id: "a1-2", arcId: "a1", numero: 2, titre: "Esclave", statut: "publie" },
+    { id: "a1-3", arcId: "a1", numero: 3, titre: "Ia et Io", statut: "publie" },
+    { id: "a1-4", arcId: "a1", numero: 4, titre: "Lien Trouble", statut: "publie" },
+    { id: "a1-5", arcId: "a1", numero: 5, titre: "Ni Mieux, ni Pire", statut: "publie" },
+    { id: "a1-6", arcId: "a1", numero: 6, titre: "Sans Affect", statut: "publie" },
 
     // --- Arc 2 : Sparte Partie 1---
     { id: "a2-1-1", arcId: "a2-1", numero: 1, titre: "Acte 1 - Société Guerrière", statut: "publie" },
