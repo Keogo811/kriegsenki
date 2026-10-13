@@ -135,6 +135,67 @@
             font-size: 16px;
         }
 
+        .acte-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(168, 168, 184, 0.15);
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 22px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 168, 184, 0.2);
+            border-radius: 4px;
+            color: var(--text);
+            text-decoration: none;
+            max-width: 48%;
+            transition: background 0.25s ease, border-color 0.25s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+        }
+
+        .nav-link.next {
+            margin-left: auto;
+            text-align: right;
+            align-items: flex-end;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--silver);
+        }
+
+        .nav-titre {
+            font-size: 15px;
+            color: var(--heading);
+            font-style: italic;
+        }
+
+        @media (max-width: 800px) {
+            .acte-nav {
+                flex-direction: column;
+            }
+            .nav-link {
+                max-width: 100%;
+            }
+            .nav-link.next {
+                text-align: left;
+                align-items: flex-start;
+            }
+        }
+
+
         .loading, .error {
             color: var(--text-soft);
             font-style: italic;
@@ -385,6 +446,7 @@
     <div class="texte" id="acte-texte">
         <p class="loading">Chargement du texte…</p>
     </div>
+    <div class="acte-nav" id="acte-nav"></div>
 </main>
 
 <!-- DÉCORATION BAS -->
@@ -517,23 +579,32 @@
 <script src="data/arcs.js"></script>
 <script src="data/actes.js"></script>
 <script>
-    // Récupère l'identifiant de l'acte dans l'URL (#a1-1)
-    const id = window.location.hash.slice(1);
+    // On enveloppe tout dans une fonction : elle sera appelée
+    // au chargement ET à chaque changement de "#" dans l'URL.
+    function afficherActe() {
+        // Récupère l'identifiant de l'acte dans l'URL (#a1-1)
+        const id = window.location.hash.slice(1);
 
-    // Trouve l'acte correspondant
-    const acte = ACTES.find(function (a) { return a.id === id; });
-    const arc = acte ? ARCS.find(function (ar) { return ar.id === acte.arcId; }) : null;
+        // Trouve l'acte correspondant
+        const acte = ACTES.find(function (a) { return a.id === id; });
+        const arc = acte ? ARCS.find(function (ar) { return ar.id === acte.arcId; }) : null;
 
-    const contexteEl = document.getElementById("acte-contexte");
-    const titreEl = document.getElementById("acte-titre");
-    const texteEl = document.getElementById("acte-texte");
-    const backLink = document.getElementById("back-link");
+        const contexteEl = document.getElementById("acte-contexte");
+        const titreEl = document.getElementById("acte-titre");
+        const texteEl = document.getElementById("acte-texte");
+        const backLink = document.getElementById("back-link");
+        const navContainer = document.getElementById("acte-nav");
 
-    if (!acte || !arc) {
-        contexteEl.textContent = "";
-        titreEl.textContent = "Acte introuvable";
-        texteEl.innerHTML = '<p class="error">Aucun acte ne correspond à cet identifiant.</p>';
-    } else {
+        // On vide le conteneur de nav à chaque rechargement
+        navContainer.innerHTML = "";
+
+        if (!acte || !arc) {
+            contexteEl.textContent = "";
+            titreEl.textContent = "Acte introuvable";
+            texteEl.innerHTML = '<p class="error">Aucun acte ne correspond à cet identifiant.</p>';
+            return;
+        }
+
         // Contexte : Arc → Acte X
         contexteEl.textContent = arc.titre + " · Acte " + acte.numero;
         titreEl.textContent = acte.titre;
@@ -545,8 +616,48 @@
         // Titre de l'onglet
         document.title = acte.titre + " — " + arc.titre;
 
+        // --- Navigation entre les actes du même arc ---
+        const actesDeLArc = ACTES
+            .filter(function (a) { return a.arcId === arc.id; })
+            .sort(function (a, b) { return a.numero - b.numero; });
+
+        const indexCourant = actesDeLArc.findIndex(function (a) { return a.id === acte.id; });
+        const actePrec = indexCourant > 0 ? actesDeLArc[indexCourant - 1] : null;
+        const acteSuiv = indexCourant >= 0 && indexCourant < actesDeLArc.length - 1
+            ? actesDeLArc[indexCourant + 1]
+            : null;
+
+        function creerLienNav(acteCible, sens) {
+            const lien = document.createElement("a");
+            lien.className = "nav-link " + sens;
+            lien.href = "acte.html#" + acteCible.id;
+
+            const label = document.createElement("span");
+            label.className = "nav-label";
+            label.textContent = sens === "prev"
+                ? "← Acte " + acteCible.numero
+                : "Acte " + acteCible.numero + " →";
+            lien.appendChild(label);
+
+            const titre = document.createElement("span");
+            titre.className = "nav-titre";
+            titre.textContent = acteCible.titre;
+            lien.appendChild(titre);
+
+            return lien;
+        }
+
+        if (actePrec) {
+            navContainer.appendChild(creerLienNav(actePrec, "prev"));
+        }
+        if (acteSuiv) {
+            navContainer.appendChild(creerLienNav(acteSuiv, "next"));
+        }
+
         // Charger le fichier texte
         const chemin = "data/actes/" + acte.id + ".txt";
+
+        texteEl.innerHTML = '<p class="loading">Chargement du texte…</p>';
 
         fetch(chemin)
             .then(function (response) {
@@ -556,7 +667,6 @@
                 return response.text();
             })
             .then(function (texte) {
-                // Découpe par lignes vides pour créer des paragraphes
                 const paragraphes = texte
                     .split(/\r?\n\s*\r?\n/)
                     .map(function (p) { return p.trim(); })
@@ -565,7 +675,6 @@
                 texteEl.innerHTML = "";
 
                 paragraphes.forEach(function (p) {
-                    // Cas spécial : "---" seul = séparateur décoratif
                     if (p === "---") {
                         const sep = document.createElement("p");
                         sep.className = "separateur";
@@ -575,11 +684,13 @@
                     }
 
                     const para = document.createElement("p");
-                    // Conserver les retours à la ligne internes
                     para.textContent = p;
                     para.style.whiteSpace = "pre-line";
                     texteEl.appendChild(para);
                 });
+
+                // Remonter en haut de la page après un changement d'acte
+                window.scrollTo({ top: 0, behavior: "instant" });
             })
             .catch(function (err) {
                 texteEl.innerHTML = '<p class="error">Impossible de charger le texte. ('
@@ -588,7 +699,13 @@
             });
     }
 
-    // Bouton retour en haut
+    // Affichage au chargement initial
+    afficherActe();
+
+    // Réaffichage quand l'URL change de "#" (navigation entre actes)
+    window.addEventListener("hashchange", afficherActe);
+
+    // Bouton retour en haut (indépendant de l'acte affiché)
     const btn = document.getElementById('backToTop');
     window.addEventListener('scroll', function () {
         if (window.scrollY > 200) {

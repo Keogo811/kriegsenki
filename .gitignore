@@ -15,3 +15,6 @@ node_modules/
 # Sauvegardes
 *.bak
 *.tmp
+
+# Fichiers sources à importer (ne pas versionner)
+imports/
