@@ -43,3 +43,17 @@ async function chargerActesParArc(arcId) {
     }
     return data;
 }
+
+
+async function chargerActe(id) {
+    const { data, error } = await sb
+        .from('actes')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+    if (error) {
+        console.error("Erreur chargerActe :", error);
+        throw error;
+    }
+    return data;
+}
