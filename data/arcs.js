@@ -22,38 +22,54 @@ const ARCS = [
     },
 
     {
-        id: "arc-2-sparte",
-        titre: "Arc 2 — Sparte",
+        id: "a2-1",
+        titre: "Arc 2 - Sparte - Partie 1",
         statut: "publie",
-        description: "Forgés dans le sang et le silence, les jumeaux gravissent Sparte par la seule force de leur efficacité glaciale."
+        synopsisId: "a2-1",
+        description: "Dans un lien trouble, fait de tendresse possessive et de froideur, les jumeaux graviront les rangs de Sparte par le sang et la gloire."
     },
 
     {
-        id: "arc-3-roma-latina",
-        titre: "Arc 3 — Roma Latina",
+        id: "a2-2",
+        titre: "Arc 2 - Sparte - Partie 2",
         statut: "publie",
-        description: "Sparte n'est plus que l'ombre d'elle-même. Io et Ia tournent leurs regards vers l'Occident, vers la Grande Grèce."
+        synopsisId: "a2-2",
+        description: "Dans l'euphorie de la gloire, l'orgueil et la légende remplace la prudence dans le coeur de Sparte. Pourront-ils survivrent face aux défis du nouvel âge?"
     },
 
     {
-        id: "arc-4-carthago",
-        titre: "Arc 4 — Carthago",
+        id: "a3",
+        titre: "Arc 3 - Roma Latina",
         statut: "publie",
+        synopsisId: "a3",
+        description: "Sparte n'est plus que l'ombre d'elle-même. Io et Ia tournent leurs regards vers l'Occident, vers Magna Graecia."
+    },
+
+    {
+        id: "a4",
+        titre: "Arc 4 - Carthago",
+        statut: "publie",
+        synopsisId: "a4",
         description: "Après un siècle de guerres en Italie, les Démons de Sparte reviennent. Rome et Carthage se regardent."
     },
 
     {
-        id: "arc-kofun",
-        titre: "Arc Kofun — Krieg Senki",
+        id: "colonie",
+        titre: "La Colonie",
         statut: "redaction",
-        description: "La naissance de Wan, entre le sang d'un tombeau et la folie d'une déesse brisée."
+        synopsisId: "colonie",
+        description: "Entre les intrigues de cour et les complots d'un autre monde, une jeune héritière devra y survivre."
     },
 
     {
-        id: "heina-senki",
-        titre: "Heina Senki",
+        id: "kofun",
+        titre: "Arc Kofun",
         statut: "redaction",
-        description: "Recueil sans ordre d'histoires autour d'Heïna, fille d'Io et de G11, dans un Reich alternatif."
-    }
+        synopsisId: "kofun",
+        description: "La naissance de Wan, entre le sang d'un tombeau et la folie d'une déesse brisée."
+    },
+
+    // >>> AUTO-IMPORT ARCS <<<
+    // Les arcs importés sont insérés automatiquement ici. Ne pas supprimer.
 
 ];
