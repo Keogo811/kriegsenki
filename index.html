@@ -434,8 +434,10 @@
 
     <h2 class="section-title">Mes Arcs</h2>
 
-    <!-- Les cartes sont générées automatiquement à partir de data/arcs.js -->
-    <div class="arcs" id="arcs-container"></div>
+    <!-- Les cartes sont générées automatiquement depuis Supabase -->
+    <div class="arcs" id="arcs-container">
+        <p class="loading">Chargement des arcs…</p>
+    </div>
 </main>
 
 <!-- ============================================================
@@ -583,7 +585,7 @@
 <!-- 1) On charge la liste des arcs -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/config.js"></script>
-<script src="data/arcs.js"></script>
+<script src="data/api.js"></script>
 
 <!-- 2) On transforme cette liste en cartes HTML -->
 <script>
@@ -596,37 +598,49 @@
 
     const container = document.getElementById("arcs-container");
 
-    ARCS.forEach(function (arc) {
-        // Créer la carte
-        const card = document.createElement("a");
-        card.className = "arc-card";
-        card.href = "arc.html#" + arc.id;
+    async function afficherArcs() {
+        try {
+            const arcs = await chargerArcs();
+            container.innerHTML = "";
 
-        // Titre
-        const titre = document.createElement("h3");
-        titre.className = "arc-title";
-        titre.textContent = arc.titre;
-        card.appendChild(titre);
+            if (arcs.length === 0) {
+                container.innerHTML = '<p class="loading">Aucun arc pour l\'instant.</p>';
+                return;
+            }
 
-        // Statut
-        const meta = document.createElement("p");
-        meta.className = "arc-meta";
-        const statutInfo = STATUTS[arc.statut] || { texte: arc.statut };
-        const spanStatut = document.createElement("span");
-        spanStatut.className = "status " + arc.statut;
-        spanStatut.textContent = statutInfo.texte;
-        meta.appendChild(spanStatut);
-        card.appendChild(meta);
+            arcs.forEach(function (arc) {
+                const card = document.createElement("a");
+                card.className = "arc-card";
+                card.href = "arc.html#" + arc.id;
 
-        // Description
-        const desc = document.createElement("p");
-        desc.className = "arc-desc";
-        desc.textContent = arc.description;
-        card.appendChild(desc);
+                const titre = document.createElement("h3");
+                titre.className = "arc-title";
+                titre.textContent = arc.titre;
+                card.appendChild(titre);
 
-        // Ajouter la carte au conteneur
-        container.appendChild(card);
-    });
+                const meta = document.createElement("p");
+                meta.className = "arc-meta";
+                const statutInfo = STATUTS[arc.statut] || { texte: arc.statut };
+                const spanStatut = document.createElement("span");
+                spanStatut.className = "status " + arc.statut;
+                spanStatut.textContent = statutInfo.texte;
+                meta.appendChild(spanStatut);
+                card.appendChild(meta);
+
+                const desc = document.createElement("p");
+                desc.className = "arc-desc";
+                desc.textContent = arc.description || "";
+                card.appendChild(desc);
+
+                container.appendChild(card);
+            });
+        } catch (err) {
+            container.innerHTML = '<p class="error">Impossible de charger les arcs.</p>';
+            console.error(err);
+        }
+    }
+
+    afficherArcs();
 
     // Bouton retour en haut
     const btn = document.getElementById('backToTop');
