@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Univers</title>
+    <title>Mon Univers — Krieg Senki</title>
     <style>
         :root {
             --bg: #17131d;
             --bg-soft: #1e1826;
             --void: #0d0a12;
+            --card-bg: #1c1624;
+            --card-hover: #241d2e;
             --text: #cdc2b8;
             --text-soft: #8a8088;
             --heading: #c8bcb4;
@@ -75,7 +77,7 @@
         .vine svg { width: 100%; height: 100%; }
 
         main {
-            max-width: 720px;
+            max-width: 820px;
             margin: 0 auto;
             padding: 40px 30px 110px;
             position: relative;
@@ -112,9 +114,73 @@
             background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
         }
 
-        p { margin-bottom: 22px; color: var(--text); }
-        p em { color: var(--mauve); font-style: italic; }
+        /* ---------- Section arcs ---------- */
+        .section-title {
+            font-size: 22px;
+            font-weight: normal;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--silver);
+            text-align: center;
+            margin: 20px 0 40px;
+        }
 
+        .arcs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .arc-card {
+            display: block;
+            text-decoration: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 168, 184, 0.2);
+            border-left: 3px solid var(--red);
+            border-radius: 4px;
+            padding: 22px 26px;
+            color: var(--text);
+            transition: background 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .arc-card:hover {
+            background: var(--card-hover);
+            border-left-color: var(--red-bright);
+            transform: translateX(3px);
+        }
+
+        .arc-title {
+            font-size: 21px;
+            letter-spacing: 1px;
+            color: var(--heading);
+            margin: 0 0 6px;
+        }
+
+        .arc-meta {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-soft);
+            margin-bottom: 10px;
+        }
+
+        .arc-meta .status {
+            color: var(--mauve);
+        }
+
+        .arc-meta .status.done { color: var(--alice); }
+        .arc-meta .status.wip { color: var(--mauve); }
+        .arc-meta .status.draft { color: var(--text-soft); }
+
+        .arc-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* ---------- Bouton ---------- */
         #backToTop {
             position: fixed;
             bottom: 26px; right: 26px;
@@ -143,6 +209,9 @@
             .lycoris { width: 80px; height: 80px; }
             .lycoris.small { width: 50px; height: 50px; }
             .vine { width: 40px; opacity: 0.4; }
+            .arc-card { padding: 18px 20px; }
+            .arc-title { font-size: 18px; }
+            .arc-desc { font-size: 15px; }
             #backToTop { width: 46px; height: 46px; bottom: 18px; right: 18px; }
         }
     </style>
@@ -188,7 +257,7 @@
 </svg>
 
 <!-- ============================================================
-     DÉCORATION HAUT — avec RELIEF
+     DÉCORATION HAUT
      ============================================================ -->
 <div class="deco top">
     <svg class="mirror-strip" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -201,50 +270,37 @@
                 <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.85"/>
                 <stop offset="100%" stop-color="#a8a8b8" stop-opacity="0"/>
             </linearGradient>
-            <!-- Dégradé interne du vide : plus profond en bas, légèrement plus clair vers l'arête -->
             <linearGradient id="voidDepthTop" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#08060c"/>
                 <stop offset="60%" stop-color="#0d0a12"/>
                 <stop offset="100%" stop-color="#161024"/>
             </linearGradient>
-            <!-- Lueur pour les pointes -->
             <radialGradient id="glowPointTop" cx="0.5" cy="0.5" r="0.5">
                 <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
                 <stop offset="100%" stop-color="#e8e8f4" stop-opacity="0"/>
             </radialGradient>
-            <!-- Filtre d'ombre portée pour les éclats -->
             <filter id="shardShadowTop" x="-30%" y="-30%" width="160%" height="160%">
                 <feGaussianBlur in="SourceAlpha" stdDeviation="1.4"/>
                 <feOffset dx="0.6" dy="1.2" result="offsetblur"/>
-                <feComponentTransfer>
-                    <feFuncA type="linear" slope="0.55"/>
-                </feComponentTransfer>
-                <feMerge>
-                    <feMergeNode/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
+                <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
         </defs>
 
         <line x1="0" y1="1" x2="1200" y2="1" stroke="#a8a8b8" stroke-width="0.7" opacity="0.55"/>
 
-        <!-- ===== VIDE avec dégradé de profondeur ===== -->
         <path fill="url(#voidDepthTop)" d="
-            M0,0
-            L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
+            M0,0 L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
             L268,52 L288,18 L318,24 L345,12 L372,34 L400,28
             L432,55 L468,42 L495,62 L520,50 L545,28 L572,38
             L598,20 L625,44 L655,36 L685,68 L718,52 L748,66
             L775,42 L802,30 L828,52 L855,40 L882,58 L915,46
             L945,62 L972,44 L1000,30 L1028,50 L1055,36 L1085,54
-            L1112,38 L1140,44 L1170,26 L1200,32
-            L1200,0 Z
+            L1112,38 L1140,44 L1170,26 L1200,32 L1200,0 Z
         "/>
 
-        <!-- Liseré intérieur sombre (creux du verre) : légèrement décalé vers l'intérieur -->
-        <path fill="none" stroke="#050308" stroke-width="1.6" stroke-linejoin="miter" stroke-miterlimit="4" opacity="0.9" d="
-            M0,2
-            L34,24 L77,17 L119,44 L161,32 L204,60 L247,42
+        <path fill="none" stroke="#050308" stroke-width="1.6" stroke-linejoin="miter" opacity="0.9" d="
+            M0,2 L34,24 L77,17 L119,44 L161,32 L204,60 L247,42
             L267,54 L287,20 L317,26 L344,14 L371,36 L399,30
             L431,57 L467,44 L494,64 L519,52 L544,30 L571,40
             L597,22 L624,46 L654,38 L684,70 L717,54 L747,68
@@ -253,10 +309,8 @@
             L1111,40 L1139,46 L1169,28 L1200,34
         "/>
 
-        <!-- Arête argentée brillante (bord supérieur du verre brisé) -->
-        <path fill="none" stroke="#e8e8f4" stroke-width="1.1" stroke-linejoin="miter" stroke-miterlimit="4" opacity="0.95" d="
-            M0,0
-            L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
+        <path fill="none" stroke="#e8e8f4" stroke-width="1.1" stroke-linejoin="miter" opacity="0.95" d="
+            M0,0 L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
             L268,52 L288,18 L318,24 L345,12 L372,34 L400,28
             L432,55 L468,42 L495,62 L520,50 L545,28 L572,38
             L598,20 L625,44 L655,36 L685,68 L718,52 L748,66
@@ -265,19 +319,6 @@
             L1112,38 L1140,44 L1170,26 L1200,32
         "/>
 
-        <!-- Liseré argenté secondaire (bas, plus discret) -->
-        <path fill="none" stroke="#a8a8b8" stroke-width="0.5" opacity="0.5" stroke-linejoin="miter" d="
-            M0,4
-            L33,26 L76,19 L118,46 L160,34 L203,62 L246,44
-            L266,56 L286,22 L316,28 L343,16 L370,38 L398,32
-            L430,59 L466,46 L493,66 L518,54 L543,32 L570,42
-            L596,24 L623,48 L653,40 L683,72 L716,56 L746,70
-            L773,46 L800,34 L826,56 L853,44 L880,62 L913,50
-            L943,66 L970,48 L998,34 L1026,54 L1053,40 L1083,58
-            L1110,42 L1138,48 L1168,30 L1200,36
-        "/>
-
-        <!-- Fissures principales vers le bas -->
         <g stroke="url(#crackFadeTop)" stroke-width="1" fill="none" stroke-linejoin="miter" stroke-linecap="round">
             <path d="M205,58 L192,76 L208,92 L196,112"/>
             <path d="M120,42 L102,58 L84,76"/>
@@ -299,16 +340,6 @@
             <path d="M1140,44 L1158,62 L1172,82"/>
         </g>
 
-        <!-- Liseré argenté sur les fissures (brillance) -->
-        <g stroke="#d8d8e4" stroke-width="0.4" fill="none" opacity="0.7" stroke-linejoin="miter" stroke-linecap="round">
-            <path d="M205,58 L192,76 L208,92 L196,112"/>
-            <path d="M432,55 L416,74 L432,94 L418,114"/>
-            <path d="M685,68 L670,88 L686,108"/>
-            <path d="M248,40 L272,54 L265,78 L282,96"/>
-            <path d="M882,58 L865,78 L882,98"/>
-        </g>
-
-        <!-- Ramifications fines -->
         <g stroke="#c8c8d8" stroke-width="0.55" fill="none" opacity="0.6" stroke-linecap="round" stroke-linejoin="miter">
             <path d="M192,76 L176,72 L170,82"/>
             <path d="M208,92 L224,96 L230,88"/>
@@ -330,19 +361,13 @@
             <path d="M1158,62 L1174,58 L1182,68"/>
         </g>
 
-        <!-- Lueurs ponctuelles sur les pointes (là où le verre capte la lumière) -->
         <g>
             <circle cx="205" cy="58" r="6" fill="url(#glowPointTop)"/>
             <circle cx="432" cy="55" r="6" fill="url(#glowPointTop)"/>
             <circle cx="685" cy="68" r="6" fill="url(#glowPointTop)"/>
             <circle cx="915" cy="46" r="6" fill="url(#glowPointTop)"/>
-            <circle cx="288" cy="18" r="5" fill="url(#glowPointTop)"/>
-            <circle cx="1000" cy="30" r="5" fill="url(#glowPointTop)"/>
-            <circle cx="120" cy="42" r="5" fill="url(#glowPointTop)"/>
-            <circle cx="748" cy="66" r="5" fill="url(#glowPointTop)"/>
         </g>
 
-        <!-- Éclats argentés avec ombre -->
         <g filter="url(#shardShadowTop)">
             <g fill="url(#shardSilverTop)">
                 <polygon points="205,58 220,62 216,48 202,46"/>
@@ -355,14 +380,6 @@
                 <polygon points="802,30 816,36 812,22 798,18"/>
                 <polygon points="1055,36 1069,42 1065,27 1051,23"/>
             </g>
-        </g>
-
-        <!-- Petites touches de lumière sur les éclats -->
-        <g fill="#f0f0f8" opacity="0.55">
-            <polygon points="205,58 214,60 212,52 204,51"/>
-            <polygon points="435,55 444,57 442,49 434,48"/>
-            <polygon points="688,68 697,70 695,62 687,61"/>
-            <polygon points="918,46 927,48 925,40 917,39"/>
         </g>
     </svg>
 
@@ -393,15 +410,6 @@
             <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)"/>
             <ellipse cx="55" cy="690" rx="3.5" ry="7" transform="rotate(35 55 690)"/>
             <ellipse cx="12" cy="850" rx="3.5" ry="7" transform="rotate(-40 12 850)"/>
-            <path d="M58,120 Q64,115 62,108" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M8,210 Q2,205 4,198" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M52,370 Q58,365 56,358" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M10,530 Q4,525 6,518" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M55,690 Q61,685 59,678" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-        </g>
-        <g opacity="0.5">
-            <use href="#lycoris-real" x="30" y="280" width="40" height="40"/>
-            <use href="#lycoris-real" x="25" y="590" width="40" height="40"/>
         </g>
     </svg>
 </div>
@@ -423,15 +431,6 @@
             <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)"/>
             <ellipse cx="55" cy="690" rx="3.5" ry="7" transform="rotate(35 55 690)"/>
             <ellipse cx="12" cy="850" rx="3.5" ry="7" transform="rotate(-40 12 850)"/>
-            <path d="M58,120 Q64,115 62,108" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M8,210 Q2,205 4,198" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M52,370 Q58,365 56,358" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M10,530 Q4,525 6,518" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-            <path d="M55,690 Q61,685 59,678" stroke="#4a4258" stroke-width="0.6" fill="none"/>
-        </g>
-        <g opacity="0.5">
-            <use href="#lycoris-real" x="30" y="280" width="40" height="40"/>
-            <use href="#lycoris-real" x="25" y="590" width="40" height="40"/>
         </g>
     </svg>
 </div>
@@ -444,21 +443,51 @@
     <p class="subtitle">Krieg Senki</p>
     <div class="divider"></div>
 
-    <p>Ceci est une page de test pour valider l'ambiance générale.</p>
+    <h2 class="section-title">Mes Arcs</h2>
 
-    <p>Le miroir brisé encadre la page : le vide a maintenant du relief — un creux plus sombre au fond, une arête argentée qui capte la lumière, et de petites lueurs aux pointes des fissures.</p>
+    <div class="arcs">
 
-    <p>Les <em>lycoris radiata</em> poussent depuis ces brisures, dans le haut et le bas.</p>
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Arc 1 — Σκλάβος (Esclave)</h3>
+            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
+            <p class="arc-desc">Dans les champs de labeur, un garçon sans nom croise son double féminin. Un nom, une raison d'exister.</p>
+        </a>
 
-    <p>De fines lianes courent le long des bords gauche et droit.</p>
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Arc 2 — Sparte</h3>
+            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
+            <p class="arc-desc">Forgés dans le sang et le silence, les jumeaux gravissent Sparte par la seule force de leur efficacité glaciale.</p>
+        </a>
 
-    <p>Le titre est la seule source de brillance, discrète, argentée, légèrement rosée.</p>
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Arc 3 — Roma Latina</h3>
+            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
+            <p class="arc-desc">Sparte n'est plus que l'ombre d'elle-même. Io et Ia tournent leurs regards vers l'Occident, vers la Grande Grèce.</p>
+        </a>
 
-    <p>Fais défiler la page pour voir apparaître le bouton de retour en haut.</p>
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Arc 4 — Carthago</h3>
+            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
+            <p class="arc-desc">Après un siècle de guerres en Italie, les Démons de Sparte reviennent. Rome et Carthage se regardent.</p>
+        </a>
+
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Arc Kofun — Krieg Senki</h3>
+            <p class="arc-meta">En cours · <span class="status wip">Rédaction</span></p>
+            <p class="arc-desc">La naissance de Wan, entre le sang d'un tombeau et la folie d'une déesse brisée.</p>
+        </a>
+
+        <a href="#" class="arc-card">
+            <h3 class="arc-title">Heina Senki</h3>
+            <p class="arc-meta">En cours · <span class="status wip">Rédaction</span></p>
+            <p class="arc-desc">Recueil sans ordre d'histoires autour d'Heïna, fille d'Io et de G11, dans un Reich alternatif.</p>
+        </a>
+
+    </div>
 </main>
 
 <!-- ============================================================
-     DÉCORATION BAS — avec RELIEF
+     DÉCORATION BAS
      ============================================================ -->
 <div class="deco bottom">
     <svg class="mirror-strip" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -483,35 +512,25 @@
             <filter id="shardShadowBot" x="-30%" y="-30%" width="160%" height="160%">
                 <feGaussianBlur in="SourceAlpha" stdDeviation="1.4"/>
                 <feOffset dx="0.6" dy="-1.2" result="offsetblur"/>
-                <feComponentTransfer>
-                    <feFuncA type="linear" slope="0.55"/>
-                </feComponentTransfer>
-                <feMerge>
-                    <feMergeNode/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
+                <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
         </defs>
 
         <line x1="0" y1="129" x2="1200" y2="129" stroke="#a8a8b8" stroke-width="0.7" opacity="0.55"/>
 
-        <!-- Vide avec dégradé -->
         <path fill="url(#voidDepthBot)" d="
-            M0,130
-            L42,102 L82,116 L122,88 L162,102 L202,72 L242,90
+            M0,130 L42,102 L82,116 L122,88 L162,102 L202,72 L242,90
             L272,74 L298,106 L328,96 L352,120 L382,106 L412,72
             L446,92 L472,62 L502,80 L528,50 L558,70 L586,46
             L614,84 L644,72 L672,100 L706,74 L736,106 L766,72
             L796,50 L824,90 L852,72 L882,102 L914,78 L942,106
             L972,78 L1002,50 L1030,90 L1058,66 L1086,100 L1114,74
-            L1142,86 L1172,54 L1200,72
-            L1200,130 Z
+            L1142,86 L1172,54 L1200,72 L1200,130 Z
         "/>
 
-        <!-- Liseré intérieur sombre -->
-        <path fill="none" stroke="#050308" stroke-width="1.6" stroke-linejoin="miter" stroke-miterlimit="4" opacity="0.9" d="
-            M0,128
-            L42,100 L82,114 L122,86 L162,100 L202,70 L242,88
+        <path fill="none" stroke="#050308" stroke-width="1.6" stroke-linejoin="miter" opacity="0.9" d="
+            M0,128 L42,100 L82,114 L122,86 L162,100 L202,70 L242,88
             L272,72 L298,104 L328,94 L352,118 L382,104 L412,70
             L446,90 L472,60 L502,78 L528,48 L558,68 L586,44
             L614,82 L644,70 L672,98 L706,72 L736,104 L766,70
@@ -520,10 +539,8 @@
             L1142,84 L1172,52 L1200,70
         "/>
 
-        <!-- Arête argentée brillante -->
-        <path fill="none" stroke="#e8e8f4" stroke-width="1.1" stroke-linejoin="miter" stroke-miterlimit="4" opacity="0.95" d="
-            M0,130
-            L42,102 L82,116 L122,88 L162,102 L202,72 L242,90
+        <path fill="none" stroke="#e8e8f4" stroke-width="1.1" stroke-linejoin="miter" opacity="0.95" d="
+            M0,130 L42,102 L82,116 L122,88 L162,102 L202,72 L242,90
             L272,74 L298,106 L328,96 L352,120 L382,106 L412,72
             L446,92 L472,62 L502,80 L528,50 L558,70 L586,46
             L614,84 L644,72 L672,100 L706,74 L736,106 L766,72
@@ -532,19 +549,6 @@
             L1142,86 L1172,54 L1200,72
         "/>
 
-        <!-- Liseré argenté secondaire -->
-        <path fill="none" stroke="#a8a8b8" stroke-width="0.5" opacity="0.5" stroke-linejoin="miter" d="
-            M0,126
-            L43,98 L83,112 L123,84 L163,98 L203,68 L243,86
-            L273,70 L299,102 L329,92 L353,116 L383,102 L413,68
-            L447,88 L473,58 L503,76 L529,46 L559,66 L587,42
-            L615,80 L645,68 L673,96 L707,70 L737,102 L767,68
-            L797,46 L825,86 L853,68 L883,98 L915,74 L943,102
-            L973,74 L1003,46 L1031,86 L1059,62 L1087,96 L1115,70
-            L1143,82 L1173,50 L1200,68
-        "/>
-
-        <!-- Fissures principales vers le haut -->
         <g stroke="url(#crackFadeBot)" stroke-width="1" fill="none" stroke-linejoin="miter" stroke-linecap="round">
             <path d="M202,72 L188,52 L204,36 L192,16"/>
             <path d="M122,88 L104,68 L86,48"/>
@@ -564,15 +568,6 @@
             <path d="M1002,50 L1020,32 L1030,12"/>
             <path d="M1086,100 L1102,80 L1114,60"/>
             <path d="M1142,86 L1158,68 L1172,48"/>
-        </g>
-
-        <!-- Liseré argenté sur les fissures -->
-        <g stroke="#d8d8e4" stroke-width="0.4" fill="none" opacity="0.7" stroke-linejoin="miter" stroke-linecap="round">
-            <path d="M202,72 L188,52 L204,36 L192,16"/>
-            <path d="M472,62 L456,42 L472,22 L458,0"/>
-            <path d="M672,100 L656,80 L674,58 L662,36"/>
-            <path d="M242,90 L264,72 L258,48"/>
-            <path d="M882,102 L864,82 L882,62"/>
         </g>
 
         <g stroke="#c8c8d8" stroke-width="0.55" fill="none" opacity="0.6" stroke-linecap="round" stroke-linejoin="miter">
@@ -596,19 +591,13 @@
             <path d="M1158,68 L1174,64 L1182,74"/>
         </g>
 
-        <!-- Lueurs ponctuelles -->
         <g>
             <circle cx="202" cy="72" r="6" fill="url(#glowPointBot)"/>
             <circle cx="472" cy="62" r="6" fill="url(#glowPointBot)"/>
             <circle cx="672" cy="100" r="6" fill="url(#glowPointBot)"/>
             <circle cx="942" cy="106" r="6" fill="url(#glowPointBot)"/>
-            <circle cx="242" cy="90" r="5" fill="url(#glowPointBot)"/>
-            <circle cx="882" cy="102" r="5" fill="url(#glowPointBot)"/>
-            <circle cx="122" cy="88" r="5" fill="url(#glowPointBot)"/>
-            <circle cx="736" cy="106" r="5" fill="url(#glowPointBot)"/>
         </g>
 
-        <!-- Éclats avec ombre -->
         <g filter="url(#shardShadowBot)">
             <g fill="url(#shardSilverBot)">
                 <polygon points="205,72 220,78 216,62 202,58"/>
@@ -621,13 +610,6 @@
                 <polygon points="782,72 796,78 792,62 778,58"/>
                 <polygon points="1042,90 1056,96 1052,80 1038,76"/>
             </g>
-        </g>
-
-        <g fill="#f0f0f8" opacity="0.55">
-            <polygon points="205,72 214,74 212,66 204,65"/>
-            <polygon points="458,64 467,66 465,58 457,57"/>
-            <polygon points="688,74 697,76 695,68 687,67"/>
-            <polygon points="916,78 925,80 923,72 915,71"/>
         </g>
     </svg>
 
