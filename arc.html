@@ -132,6 +132,35 @@
             line-height: 1.7;
         }
 
+        .synopsis {
+            margin-top: 30px;
+            margin-bottom: 40px;
+            padding: 20px 24px;
+            background: rgba(168, 168, 184, 0.05);
+            border-left: 2px solid var(--mauve);
+            border-radius: 3px;
+        }
+
+        .synopsis p {
+            margin: 0 0 14px;
+            color: var(--text);
+            font-size: 17px;
+            line-height: 1.75;
+        }
+
+        .synopsis p:last-child {
+            margin-bottom: 0;
+        }
+
+        .synopsis-titre {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--mauve);
+            margin-bottom: 14px;
+        }
+
+
         .section-title {
             font-size: 18px;
             font-weight: normal;
@@ -448,6 +477,8 @@
 
     <p class="arc-description" id="arc-description"></p>
 
+    <div class="synopsis" id="arc-synopsis"></div>
+
     <h2 class="section-title">Actes</h2>
     <div class="actes" id="actes-container"></div>
     <p class="empty-note" id="actes-vide" style="display:none;">
@@ -618,6 +649,42 @@
 
         // Change aussi le titre de l'onglet
         document.title = arc.titre + " — Krieg Senki";
+    }
+
+
+    // --- Affichage du synopsis (description longue) ---
+    const synopsisContainer = document.getElementById("arc-synopsis");
+    if (arc && arc.synopsisId) {
+        const cheminSynopsis = "data/synopsis/" + arc.synopsisId + ".txt";
+        fetch(cheminSynopsis)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Synopsis introuvable : " + cheminSynopsis);
+                }
+                return response.text();
+            })
+            .then(function (texte) {
+                const paragraphes = texte
+                    .split(/\r?\n\s*\r?\n/)
+                    .map(function (p) { return p.trim(); })
+                    .filter(function (p) { return p.length > 0; });
+
+                const titre = document.createElement("div");
+                titre.className = "synopsis-titre";
+                titre.textContent = "Synopsis";
+                synopsisContainer.appendChild(titre);
+
+                paragraphes.forEach(function (p) {
+                    const para = document.createElement("p");
+                    para.textContent = p;
+                    para.style.whiteSpace = "pre-line";
+                    synopsisContainer.appendChild(para);
+                });
+            })
+            .catch(function (err) {
+                console.warn(err);
+                // Pas de synopsis ? On n'affiche simplement rien.
+            });
     }
 
     // --- Affichage des Actes de cet arc ---
