@@ -41,16 +41,11 @@
         .deco.top { margin-bottom: -30px; }
         .deco.bottom { margin-top: -30px; }
 
-        .mirror-strip {
-            width: 100%;
-            height: 130px;
-            display: block;
-        }
+        .mirror-strip { width: 100%; height: 130px; display: block; }
 
         .lycoris {
             position: absolute;
-            width: 130px;
-            height: 130px;
+            width: 130px; height: 130px;
             z-index: 3;
             pointer-events: none;
         }
@@ -114,7 +109,6 @@
             background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
         }
 
-        /* ---------- Section arcs ---------- */
         .section-title {
             font-size: 22px;
             font-weight: normal;
@@ -164,13 +158,9 @@
             margin-bottom: 10px;
         }
 
-        .arc-meta .status {
-            color: var(--mauve);
-        }
-
-        .arc-meta .status.done { color: var(--alice); }
-        .arc-meta .status.wip { color: var(--mauve); }
-        .arc-meta .status.draft { color: var(--text-soft); }
+        .arc-meta .status.publie { color: var(--alice); }
+        .arc-meta .status.redaction { color: var(--mauve); }
+        .arc-meta .status.brouillon { color: var(--text-soft); }
 
         .arc-desc {
             font-size: 16px;
@@ -180,7 +170,6 @@
             font-style: italic;
         }
 
-        /* ---------- Bouton ---------- */
         #backToTop {
             position: fixed;
             bottom: 26px; right: 26px;
@@ -445,45 +434,8 @@
 
     <h2 class="section-title">Mes Arcs</h2>
 
-    <div class="arcs">
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Arc 1 — Σκλάβος (Esclave)</h3>
-            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
-            <p class="arc-desc">Dans les champs de labeur, un garçon sans nom croise son double féminin. Un nom, une raison d'exister.</p>
-        </a>
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Arc 2 — Sparte</h3>
-            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
-            <p class="arc-desc">Forgés dans le sang et le silence, les jumeaux gravissent Sparte par la seule force de leur efficacité glaciale.</p>
-        </a>
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Arc 3 — Roma Latina</h3>
-            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
-            <p class="arc-desc">Sparte n'est plus que l'ombre d'elle-même. Io et Ia tournent leurs regards vers l'Occident, vers la Grande Grèce.</p>
-        </a>
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Arc 4 — Carthago</h3>
-            <p class="arc-meta">Terminé · <span class="status done">Publié</span></p>
-            <p class="arc-desc">Après un siècle de guerres en Italie, les Démons de Sparte reviennent. Rome et Carthage se regardent.</p>
-        </a>
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Arc Kofun — Krieg Senki</h3>
-            <p class="arc-meta">En cours · <span class="status wip">Rédaction</span></p>
-            <p class="arc-desc">La naissance de Wan, entre le sang d'un tombeau et la folie d'une déesse brisée.</p>
-        </a>
-
-        <a href="#" class="arc-card">
-            <h3 class="arc-title">Heina Senki</h3>
-            <p class="arc-meta">En cours · <span class="status wip">Rédaction</span></p>
-            <p class="arc-desc">Recueil sans ordre d'histoires autour d'Heïna, fille d'Io et de G11, dans un Reich alternatif.</p>
-        </a>
-
-    </div>
+    <!-- Les cartes sont générées automatiquement à partir de data/arcs.js -->
+    <div class="arcs" id="arcs-container"></div>
 </main>
 
 <!-- ============================================================
@@ -624,16 +576,66 @@
      ============================================================ -->
 <button id="backToTop" aria-label="Retour en haut">↑</button>
 
+<!-- ============================================================
+     CHARGEMENT DES DONNÉES + GÉNÉRATION DES CARTES
+     ============================================================ -->
+
+<!-- 1) On charge la liste des arcs -->
+<script src="data/arcs.js"></script>
+
+<!-- 2) On transforme cette liste en cartes HTML -->
 <script>
+    // Correspondance entre le statut dans arcs.js et le texte affiché
+    const STATUTS = {
+        publie:    { texte: "Publié" },
+        redaction: { texte: "Rédaction" },
+        brouillon: { texte: "Brouillon" }
+    };
+
+    const container = document.getElementById("arcs-container");
+
+    ARCS.forEach(function (arc) {
+        // Créer la carte
+        const card = document.createElement("a");
+        card.className = "arc-card";
+        card.href = "#"; // sera remplacé plus tard par un vrai lien
+
+        // Titre
+        const titre = document.createElement("h3");
+        titre.className = "arc-title";
+        titre.textContent = arc.titre;
+        card.appendChild(titre);
+
+        // Statut
+        const meta = document.createElement("p");
+        meta.className = "arc-meta";
+        const statutInfo = STATUTS[arc.statut] || { texte: arc.statut };
+        const spanStatut = document.createElement("span");
+        spanStatut.className = "status " + arc.statut;
+        spanStatut.textContent = statutInfo.texte;
+        meta.appendChild(spanStatut);
+        card.appendChild(meta);
+
+        // Description
+        const desc = document.createElement("p");
+        desc.className = "arc-desc";
+        desc.textContent = arc.description;
+        card.appendChild(desc);
+
+        // Ajouter la carte au conteneur
+        container.appendChild(card);
+    });
+
+    // Bouton retour en haut
     const btn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', function () {
         if (window.scrollY > 200) {
             btn.classList.add('visible');
         } else {
             btn.classList.remove('visible');
         }
     });
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', function () {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 </script>
