@@ -613,8 +613,8 @@
 <button id="backToTop" aria-label="Retour en haut">↑</button>
 
 <!-- CHARGEMENT DES DONNÉES + AFFICHAGE DE L'ARC -->
-<script src="data/arcs.js"></script>
-<script src="data/actes.js"></script>
+<script src="data/api.js"></script>
+
 <script>
     const STATUTS = {
         publie:    { texte: "Publié" },
@@ -622,21 +622,35 @@
         brouillon: { texte: "Brouillon" }
     };
 
-    // Récupère l'identifiant dans l'URL (après le #)
-    const id = window.location.hash.slice(1); // enlève le "#"
+    async function afficherArc() {
+        const id = window.location.hash.slice(1);
 
-    // Trouve l'arc correspondant
-    const arc = ARCS.find(function (a) { return a.id === id; });
+        const titreEl = document.getElementById("arc-titre");
+        const statutEl = document.getElementById("arc-statut");
+        const descEl = document.getElementById("arc-description");
+        const synopsisContainer = document.getElementById("arc-synopsis");
+        const actesContainer = document.getElementById("actes-container");
+        const actesVide = document.getElementById("actes-vide");
 
-    const titreEl = document.getElementById("arc-titre");
-    const statutEl = document.getElementById("arc-statut");
-    const descEl = document.getElementById("arc-description");
+        // On remet tout à zéro à chaque rechargement
+        synopsisContainer.innerHTML = "";
+        actesContainer.innerHTML = "";
+        actesVide.style.display = "none";
+        statutEl.innerHTML = "";
 
-    if (!arc) {
-        titreEl.textContent = "Arc introuvable";
-        statutEl.textContent = "";
-        descEl.textContent = "Aucun arc ne correspond à cet identifiant.";
-    } else {
+        let arc = null;
+        try {
+            arc = await chargerArc(id);
+        } catch (err) {
+            console.error(err);
+        }
+
+        if (!arc) {
+            titreEl.textContent = "Arc introuvable";
+            descEl.textContent = "Aucun arc ne correspond à cet identifiant.";
+            return;
+        }
+
         titreEl.textContent = arc.titre;
 
         const statutInfo = STATUTS[arc.statut] || { texte: arc.statut };
@@ -645,85 +659,70 @@
         spanStatut.textContent = statutInfo.texte;
         statutEl.appendChild(spanStatut);
 
-        descEl.textContent = arc.description;
+        descEl.textContent = arc.description || "";
 
-        // Change aussi le titre de l'onglet
         document.title = arc.titre + " — Krieg Senki";
-    }
 
+        // --- Synopsis ---
+        if (arc.synopsis && arc.synopsis.trim().length > 0) {
+            const titreSyn = document.createElement("div");
+            titreSyn.className = "synopsis-titre";
+            titreSyn.textContent = "Synopsis";
+            synopsisContainer.appendChild(titreSyn);
 
-    // --- Affichage du synopsis (description longue) ---
-    const synopsisContainer = document.getElementById("arc-synopsis");
-    if (arc && arc.synopsisId) {
-        const cheminSynopsis = "data/synopsis/" + arc.synopsisId + ".txt";
-        fetch(cheminSynopsis)
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error("Synopsis introuvable : " + cheminSynopsis);
-                }
-                return response.text();
-            })
-            .then(function (texte) {
-                const paragraphes = texte
-                    .split(/\r?\n\s*\r?\n/)
-                    .map(function (p) { return p.trim(); })
-                    .filter(function (p) { return p.length > 0; });
+            const paragraphes = arc.synopsis
+                .split(/\r?\n\s*\r?\n/)
+                .map(function (p) { return p.trim(); })
+                .filter(function (p) { return p.length > 0; });
 
-                const titre = document.createElement("div");
-                titre.className = "synopsis-titre";
-                titre.textContent = "Synopsis";
-                synopsisContainer.appendChild(titre);
-
-                paragraphes.forEach(function (p) {
-                    const para = document.createElement("p");
-                    para.textContent = p;
-                    para.style.whiteSpace = "pre-line";
-                    synopsisContainer.appendChild(para);
-                });
-            })
-            .catch(function (err) {
-                console.warn(err);
-                // Pas de synopsis ? On n'affiche simplement rien.
-            });
-    }
-
-    // --- Affichage des Actes de cet arc ---
-    const actesContainer = document.getElementById("actes-container");
-    const actesVide = document.getElementById("actes-vide");
-
-    if (arc) {
-        const actesDeLArc = ACTES
-            .filter(function (a) { return a.arcId === arc.id; })
-            .sort(function (a, b) { return a.numero - b.numero; });
-
-        if (actesDeLArc.length === 0) {
-            actesVide.style.display = "block";
-        } else {
-            actesDeLArc.forEach(function (acte) {
-                const row = document.createElement("a");
-                row.className = "acte-row";
-                row.href = "acte.html#" + acte.id;
-
-                const num = document.createElement("span");
-                num.className = "acte-num";
-                num.textContent = "Acte " + acte.numero;
-                row.appendChild(num);
-
-                const titre = document.createElement("span");
-                titre.className = "acte-titre";
-                titre.textContent = acte.titre;
-                row.appendChild(titre);
-
-                const statutInfo = STATUTS[acte.statut] || { texte: acte.statut };
-                const statut = document.createElement("span");
-                statut.className = "acte-statut " + acte.statut;
-                statut.textContent = statutInfo.texte;
-                row.appendChild(statut);
-
-                actesContainer.appendChild(row);
+            paragraphes.forEach(function (p) {
+                const para = document.createElement("p");
+                para.textContent = p;
+                para.style.whiteSpace = "pre-line";
+                synopsisContainer.appendChild(para);
             });
         }
+
+        // --- Actes ---
+        try {
+            const actes = await chargerActesParArc(arc.id);
+
+            if (actes.length === 0) {
+                actesVide.style.display = "block";
+            } else {
+                actes.forEach(function (acte) {
+                    const row = document.createElement("a");
+                    row.className = "acte-row";
+                    row.href = "acte.html#" + acte.id;
+
+                    const num = document.createElement("span");
+                    num.className = "acte-num";
+                    num.textContent = "Acte " + acte.numero;
+                    row.appendChild(num);
+
+                    const titre = document.createElement("span");
+                    titre.className = "acte-titre";
+                    titre.textContent = acte.titre;
+                    row.appendChild(titre);
+
+                    const statutInfo2 = STATUTS[acte.statut] || { texte: acte.statut };
+                    const statut = document.createElement("span");
+                    statut.className = "acte-statut " + acte.statut;
+                    statut.textContent = statutInfo2.texte;
+                    row.appendChild(statut);
+
+                    actesContainer.appendChild(row);
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            actesVide.textContent = "Impossible de charger les actes.";
+            actesVide.style.display = "block";
+        }
     }
+
+    afficherArc();
+    window.addEventListener("hashchange", afficherArc);
 
     // Bouton retour en haut
     const btn = document.getElementById('backToTop');

@@ -17,3 +17,29 @@ async function chargerArcs() {
     }
     return data;
 }
+
+async function chargerArc(id) {
+    const { data, error } = await sb
+        .from('arcs')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+    if (error) {
+        console.error("Erreur chargerArc :", error);
+        throw error;
+    }
+    return data;
+}
+
+async function chargerActesParArc(arcId) {
+    const { data, error } = await sb
+        .from('actes')
+        .select('*')
+        .eq('arc_id', arcId)
+        .order('numero', { ascending: true });
+    if (error) {
+        console.error("Erreur chargerActesParArc :", error);
+        throw error;
+    }
+    return data;
+}
