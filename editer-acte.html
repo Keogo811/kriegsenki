@@ -37,6 +37,47 @@
             min-height: 100vh;
         }
 
+        /* ---- Colonnes de lycoris (fixes, côté gauche et droite) ---- */
+        .lycoris-side {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 130px;
+            pointer-events: none;
+            z-index: 5;
+            display: block;
+        }
+        .lycoris-side.left { left: 0; }
+        .lycoris-side.right { right: 0; }
+
+        .lycoris-side .fleur {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            opacity: 0.85;
+            filter: drop-shadow(0 0 6px rgba(140, 26, 40, 0.35));
+        }
+
+        /* Colonne gauche : positions verticales variées */
+        .lycoris-side.left .f1 { top: 4%;  left: 8px;  width: 90px; height: 90px; opacity: 0.9; }
+        .lycoris-side.left .f2 { top: 14%; left: 42px; width: 55px; height: 55px; opacity: 0.7; }
+        .lycoris-side.left .f3 { top: 26%; left: 4px;  width: 68px; height: 68px; }
+        .lycoris-side.left .f4 { top: 38%; left: 30px; width: 48px; height: 48px; opacity: 0.6; }
+        .lycoris-side.left .f5 { top: 50%; left: 10px; width: 80px; height: 80px; }
+        .lycoris-side.left .f6 { top: 62%; left: 44px; width: 52px; height: 52px; opacity: 0.7; }
+        .lycoris-side.left .f7 { top: 74%; left: 6px;  width: 72px; height: 72px; }
+        .lycoris-side.left .f8 { top: 86%; left: 34px; width: 60px; height: 60px; opacity: 0.75; }
+
+        /* Colonne droite : décalage pour ne pas être identique à la gauche */
+        .lycoris-side.right .f1 { top: 8%;  right: 6px;  width: 82px; height: 82px; opacity: 0.85; }
+        .lycoris-side.right .f2 { top: 20%; right: 40px; width: 52px; height: 52px; opacity: 0.65; }
+        .lycoris-side.right .f3 { top: 32%; right: 8px;  width: 70px; height: 70px; }
+        .lycoris-side.right .f4 { top: 44%; right: 32px; width: 92px; height: 92px; opacity: 0.9; }
+        .lycoris-side.right .f5 { top: 56%; right: 14px; width: 58px; height: 58px; opacity: 0.7; }
+        .lycoris-side.right .f6 { top: 68%; right: 42px; width: 48px; height: 48px; opacity: 0.55; }
+        .lycoris-side.right .f7 { top: 80%; right: 10px; width: 76px; height: 76px; }
+        .lycoris-side.right .f8 { top: 92%; right: 36px; width: 54px; height: 54px; opacity: 0.7; }
+
         /* ---- Barre supérieure sticky ---- */
         .topbar {
             background: var(--card-bg);
@@ -122,6 +163,8 @@
             max-width: 900px;
             margin: 0 auto;
             padding: 30px 24px 120px;
+            position: relative;
+            z-index: 10;
         }
 
         .champ-titre {
@@ -176,7 +219,6 @@
             margin-bottom: 22px;
         }
 
-        /* Overrides du thème Quill pour notre palette */
         .ql-toolbar.ql-snow {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -243,7 +285,6 @@
             text-decoration: underline;
         }
 
-        /* Icônes de la barre d'outils */
         .ql-snow .ql-stroke { stroke: var(--text); }
         .ql-snow .ql-fill { fill: var(--text); }
         .ql-snow .ql-picker { color: var(--text); }
@@ -302,6 +343,29 @@
         }
         .message.loading { color: var(--text-soft); font-style: italic; display: block; }
 
+        /* ---- Responsive ---- */
+        @media (max-width: 1200px) {
+            /* Réduit les colonnes quand l'espace devient serré */
+            .lycoris-side { width: 90px; }
+            .lycoris-side .fleur { transform: scale(0.8); transform-origin: center; }
+        }
+
+        @media (max-width: 1000px) {
+            /* Réduit encore */
+            .lycoris-side { width: 70px; }
+            .lycoris-side .fleur { transform: scale(0.65); }
+            .lycoris-side.left .f2,
+            .lycoris-side.left .f4,
+            .lycoris-side.left .f6,
+            .lycoris-side.right .f2,
+            .lycoris-side.right .f6 { display: none; }
+        }
+
+        @media (max-width: 800px) {
+            /* Sur mobile : on cache les côtés pour ne pas gêner l'écriture */
+            .lycoris-side { display: none; }
+        }
+
         @media (max-width: 700px) {
             main { padding: 16px 14px 100px; }
             .topbar { padding: 10px 14px; }
@@ -314,6 +378,64 @@
 </head>
 <body>
 
+<!-- DÉFINITION DE LA LYCORIS (réutilisable) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <g id="lycoris-real">
+            <g fill="#8c1a28" fill-opacity="0.9" stroke="#b01828" stroke-width="0.6">
+                <path d="M50,50 C48,38 44,24 40,10 C38,3 42,0 45,4 C50,16 54,32 50,50 Z"/>
+                <path d="M50,50 C60,42 74,32 88,22 C94,18 97,22 93,25 C80,34 64,44 50,50 Z"/>
+                <path d="M50,50 C62,56 78,62 94,66 C100,68 98,72 93,71 C76,68 60,60 50,50 Z"/>
+                <path d="M50,50 C52,62 56,76 60,90 C62,97 58,100 55,96 C50,84 46,68 50,50 Z"/>
+                <path d="M50,50 C40,58 24,64 8,66 C2,68 2,72 8,71 C24,68 40,60 50,50 Z"/>
+                <path d="M50,50 C38,42 24,34 8,25 C2,22 2,26 8,28 C24,36 40,44 50,50 Z"/>
+            </g>
+            <g stroke="#b01828" stroke-width="0.7" fill="none" stroke-linecap="round">
+                <path d="M50,50 Q48,26 46,4"/>
+                <path d="M50,50 Q68,32 92,14"/>
+                <path d="M50,50 Q70,68 94,80"/>
+                <path d="M50,50 Q52,72 52,96"/>
+                <path d="M50,50 Q30,68 8,82"/>
+                <path d="M50,50 Q30,30 6,16"/>
+            </g>
+            <g fill="#d0c8c0">
+                <circle cx="46" cy="4" r="1.4"/>
+                <circle cx="92" cy="14" r="1.4"/>
+                <circle cx="94" cy="80" r="1.4"/>
+                <circle cx="52" cy="96" r="1.4"/>
+                <circle cx="8" cy="82" r="1.4"/>
+                <circle cx="6" cy="16" r="1.4"/>
+            </g>
+            <circle cx="50" cy="50" r="2" fill="#e8e0d4"/>
+        </g>
+    </defs>
+</svg>
+
+<!-- COLONNE DE LYCORIS — GAUCHE -->
+<div class="lycoris-side left" aria-hidden="true">
+    <svg class="fleur f1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f5" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f6" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f7" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f8" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+</div>
+
+<!-- COLONNE DE LYCORIS — DROITE -->
+<div class="lycoris-side right" aria-hidden="true">
+    <svg class="fleur f1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f5" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f6" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f7" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="fleur f8" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+</div>
+
+<!-- BARRE SUPÉRIEURE -->
 <div class="topbar">
     <div class="topbar-left">
         <a href="dashboard.html" class="back-link" id="back-link">← Tableau de bord</a>
@@ -399,10 +521,8 @@
     }
 
     function texteVersHtml(texte) {
-        // Si le texte contient déjà du HTML, on le garde tel quel
         if (/<[a-z][\s\S]*>/i.test(texte)) return texte;
 
-        // Sinon, on convertit les paragraphes en <p>...</p>
         const paragraphes = texte
             .split(/\r?\n\s*\r?\n/)
             .map(function (p) { return p.trim(); })
@@ -420,7 +540,6 @@
 
     function compterCaracteres() {
         const texte = quill.getText() || "";
-        // Retire le retour à la ligne final que Quill ajoute
         const propre = texte.replace(/\n$/, "");
         const nb = propre.length;
         compteur.textContent = nb + " caractère" + (nb > 1 ? "s" : "");
@@ -438,7 +557,6 @@
         saveStatus.className = "save-status saved";
     }
 
-    // ---------- Détection des modifications ----------
     inputTitre.addEventListener("input", marquerModifie);
     selectStatut.addEventListener("change", marquerModifie);
     quill.on('text-change', function () {
@@ -448,7 +566,6 @@
 
     // ---------- Chargement de l'acte ----------
     async function charger() {
-        // Vérifier qu'on est connecté
         const { data: sessionData } = await sb.auth.getSession();
         if (!sessionData || !sessionData.session) {
             window.location.replace("admin.html");
@@ -469,25 +586,19 @@
             }
 
             acteEnCours = acte;
-
-            // Remplir les champs
             inputTitre.value = acte.titre || "";
             selectStatut.value = acte.statut || "brouillon";
             topbarId.textContent = acte.id;
 
-            // Charger le contenu dans Quill
             const html = texteVersHtml(acte.contenu || "");
             quill.clipboard.dangerouslyPasteHTML(html);
 
-            // Info dernière modification
             if (acte.updated_at) {
                 const d = new Date(acte.updated_at);
                 derniereMaj.textContent = "Modifié le " + d.toLocaleDateString('fr-FR') + " à " + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             }
 
-            // Lien retour
             backLink.href = "dashboard.html";
-
             cacherMessage();
             compterCaracteres();
             marquerEnregistre();
@@ -537,7 +648,6 @@
 
     btnSave.addEventListener("click", enregistrer);
 
-    // Ctrl+S / Cmd+S
     document.addEventListener("keydown", function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
             e.preventDefault();
@@ -545,7 +655,6 @@
         }
     });
 
-    // Avertir si on quitte sans sauvegarder
     window.addEventListener("beforeunload", function (e) {
         if (modifie) {
             e.preventDefault();
@@ -553,7 +662,6 @@
         }
     });
 
-    // ---------- Démarrage ----------
     charger();
 </script>
 
