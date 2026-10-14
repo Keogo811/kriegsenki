@@ -10,6 +10,7 @@ async function chargerArcs() {
     const { data, error } = await sb
         .from('arcs')
         .select('*')
+        .order('ordre', { ascending: true })
         .order('created_at', { ascending: true });
     if (error) {
         console.error("Erreur chargerArcs :", error);
