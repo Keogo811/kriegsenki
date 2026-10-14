@@ -33,10 +33,11 @@
             min-height: 100vh;
         }
 
+        /* ---- En-tête sticky ---- */
         header {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
+            padding: 14px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -89,45 +90,158 @@
             color: var(--red-bright);
         }
 
-        .btn.small {
-            padding: 5px 10px;
-            font-size: 11px;
+        .btn.small { padding: 5px 10px; font-size: 11px; }
+        .btn.primary { border-color: var(--red); color: var(--red-bright); }
+        .btn.primary:hover { background: rgba(140, 26, 40, 0.15); }
+
+        /* ---- Bandeau décoratif miroir ---- */
+        .deco-bandeau {
+            width: 100%;
+            height: 100px;
+            position: relative;
+            pointer-events: none;
+            overflow: hidden;
         }
 
+        .deco-bandeau svg.mirror-strip {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .lycoris {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .lycoris.s1 { width: 95px; height: 95px; }
+        .lycoris.s2 { width: 70px; height: 70px; opacity: 0.85; }
+        .lycoris.s3 { width: 55px; height: 55px; opacity: 0.7; }
+        .lycoris.s4 { width: 45px; height: 45px; opacity: 0.55; }
+
+        /* Positions dans le bandeau haut */
+        .top-banner .lycoris:nth-child(2) { top: 10px; left: 3%; }
+        .top-banner .lycoris:nth-child(3) { top: 30px; left: 12%; }
+        .top-banner .lycoris:nth-child(4) { top: 5px; left: 22%; }
+        .top-banner .lycoris:nth-child(5) { top: 40px; left: 31%; }
+        .top-banner .lycoris:nth-child(6) { top: 15px; left: 42%; }
+        .top-banner .lycoris:nth-child(7) { top: 35px; left: 52%; }
+        .top-banner .lycoris:nth-child(8) { top: 8px; left: 63%; }
+        .top-banner .lycoris:nth-child(9) { top: 42px; left: 73%; }
+        .top-banner .lycoris:nth-child(10) { top: 12px; left: 83%; }
+        .top-banner .lycoris:nth-child(11) { top: 38px; left: 92%; }
+
+        /* Positions dans le bandeau bas */
+        .bottom-banner .lycoris:nth-child(1) { bottom: 10px; left: 5%; }
+        .bottom-banner .lycoris:nth-child(2) { bottom: 30px; left: 15%; }
+        .bottom-banner .lycoris:nth-child(3) { bottom: 5px; left: 26%; }
+        .bottom-banner .lycoris:nth-child(4) { bottom: 35px; left: 37%; }
+        .bottom-banner .lycoris:nth-child(5) { bottom: 15px; left: 48%; }
+        .bottom-banner .lycoris:nth-child(6) { bottom: 40px; left: 59%; }
+        .bottom-banner .lycoris:nth-child(7) { bottom: 8px; left: 70%; }
+        .bottom-banner .lycoris:nth-child(8) { bottom: 32px; left: 81%; }
+        .bottom-banner .lycoris:nth-child(9) { bottom: 12px; left: 92%; }
+
+        /* ---- Contenu principal ---- */
         main {
-            max-width: 1000px;
+            max-width: 1080px;
             margin: 0 auto;
-            padding: 30px 24px 80px;
+            padding: 30px 24px 60px;
+        }
+
+        .barre-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 26px;
         }
 
         .intro {
             color: var(--text-soft);
             font-size: 14px;
-            margin-bottom: 30px;
             font-style: italic;
+            margin: 0;
         }
 
+        /* ---- Boîte ---- */
+        .boite {
+            background: rgba(28, 22, 36, 0.5);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--mauve);
+            border-radius: 4px;
+            margin-bottom: 26px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .boite-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(138, 106, 136, 0.08);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .boite-titre {
+            font-size: 17px;
+            letter-spacing: 1px;
+            color: var(--heading);
+            flex: 1;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .boite-titre:hover { color: var(--red-bright); }
+
+        .boite-nb {
+            font-size: 12px;
+            color: var(--text-soft);
+            font-family: Consolas, monospace;
+            letter-spacing: 1px;
+        }
+
+        .boite-toggle {
+            font-size: 14px;
+            color: var(--silver);
+            width: 16px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .boite-contenu {
+            padding: 12px;
+        }
+
+        /* ---- Arc ---- */
         .arc-bloc {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-left: 3px solid var(--red);
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
 
+        .arc-bloc:last-child { margin-bottom: 0; }
+
         .arc-header {
-            padding: 16px 20px;
+            padding: 14px 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .arc-header {
             cursor: pointer;
             user-select: none;
+            transition: background 0.15s ease;
+        }
+
+        .arc-header:hover {
+            background: rgba(168, 168, 184, 0.04);
         }
 
         .arc-toggle {
@@ -135,22 +249,13 @@
             color: var(--silver);
             width: 16px;
             text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .arc-nb-actes {
-            font-size: 11px;
-            color: var(--text-soft);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-family: Consolas, monospace;
         }
 
         .arc-header-titre {
-            font-size: 17px;
+            font-size: 16px;
             color: var(--heading);
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
 
         .arc-header-id {
@@ -159,6 +264,28 @@
             font-family: Consolas, monospace;
         }
 
+        /* ---- Badge nombre d'actes, bien visible ---- */
+        .arc-nb-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: rgba(140, 26, 40, 0.18);
+            border: 1px solid rgba(176, 24, 40, 0.4);
+            border-radius: 999px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: #e0a8b0;
+            font-weight: bold;
+        }
+
+        .arc-nb-badge .nb {
+            font-size: 16px;
+            color: #ffd0d6;
+        }
+
+        /* ---- Statut ---- */
         .statut {
             font-size: 11px;
             letter-spacing: 1px;
@@ -170,16 +297,33 @@
         .statut.redaction { color: var(--mauve); background: rgba(138, 106, 136, 0.1); }
         .statut.brouillon { color: var(--text-soft); background: rgba(138, 128, 136, 0.1); }
 
+        /* ---- Sélecteur de boîte dans un arc ---- */
+        .boite-select {
+            background: var(--bg);
+            border: 1px solid var(--silver-soft);
+            color: var(--text);
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-family: Georgia, serif;
+            font-size: 12px;
+            cursor: pointer;
+            max-width: 140px;
+        }
+
+        .boite-select:hover { border-color: var(--red-bright); }
+
+        /* ---- Liste des actes ---- */
         .actes-liste {
-            padding: 8px 0;
+            padding: 4px 0 8px;
+            border-top: 1px solid rgba(168, 168, 184, 0.08);
         }
 
         .acte-ligne {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 20px;
-            border-bottom: 1px solid rgba(168, 168, 184, 0.08);
+            padding: 8px 18px;
+            border-bottom: 1px solid rgba(168, 168, 184, 0.06);
             flex-wrap: wrap;
         }
 
@@ -194,9 +338,9 @@
 
         .acte-titre {
             flex: 1;
-            font-size: 15px;
+            font-size: 14px;
             color: var(--text);
-            min-width: 200px;
+            min-width: 180px;
         }
 
         .acte-id {
@@ -207,12 +351,13 @@
         }
 
         .vide {
-            padding: 12px 20px;
+            padding: 12px 18px;
             color: var(--text-soft);
             font-size: 13px;
             font-style: italic;
         }
 
+        /* ---- Messages ---- */
         .message {
             padding: 14px 18px;
             border-radius: 4px;
@@ -229,19 +374,56 @@
             font-style: italic;
         }
 
-        .hidden { display: none; }
-
         @media (max-width: 700px) {
-            main { padding: 20px 14px 60px; }
+            main { padding: 20px 14px 40px; }
             header { padding: 12px 14px; }
-            .arc-header, .acte-ligne { padding: 12px 14px; }
+            .arc-header, .acte-ligne, .boite-header { padding: 12px 14px; }
             .acte-num { min-width: auto; }
             .acte-titre { min-width: 100%; }
+            .deco-bandeau { height: 70px; }
+            .lycoris.s1 { width: 60px; height: 60px; }
+            .lycoris.s2 { width: 45px; height: 45px; }
+            .lycoris.s3 { width: 35px; height: 35px; }
+            .lycoris.s4 { width: 28px; height: 28px; }
         }
     </style>
 </head>
 <body>
 
+<!-- DÉFINITIONS SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <g id="lycoris-real">
+            <g fill="#8c1a28" fill-opacity="0.9" stroke="#b01828" stroke-width="0.6">
+                <path d="M50,50 C48,38 44,24 40,10 C38,3 42,0 45,4 C50,16 54,32 50,50 Z"/>
+                <path d="M50,50 C60,42 74,32 88,22 C94,18 97,22 93,25 C80,34 64,44 50,50 Z"/>
+                <path d="M50,50 C62,56 78,62 94,66 C100,68 98,72 93,71 C76,68 60,60 50,50 Z"/>
+                <path d="M50,50 C52,62 56,76 60,90 C62,97 58,100 55,96 C50,84 46,68 50,50 Z"/>
+                <path d="M50,50 C40,58 24,64 8,66 C2,68 2,72 8,71 C24,68 40,60 50,50 Z"/>
+                <path d="M50,50 C38,42 24,34 8,25 C2,22 2,26 8,28 C24,36 40,44 50,50 Z"/>
+            </g>
+            <g stroke="#b01828" stroke-width="0.7" fill="none" stroke-linecap="round">
+                <path d="M50,50 Q48,26 46,4"/>
+                <path d="M50,50 Q68,32 92,14"/>
+                <path d="M50,50 Q70,68 94,80"/>
+                <path d="M50,50 Q52,72 52,96"/>
+                <path d="M50,50 Q30,68 8,82"/>
+                <path d="M50,50 Q30,30 6,16"/>
+            </g>
+            <g fill="#d0c8c0">
+                <circle cx="46" cy="4" r="1.4"/>
+                <circle cx="92" cy="14" r="1.4"/>
+                <circle cx="94" cy="80" r="1.4"/>
+                <circle cx="52" cy="96" r="1.4"/>
+                <circle cx="8" cy="82" r="1.4"/>
+                <circle cx="6" cy="16" r="1.4"/>
+            </g>
+            <circle cx="50" cy="50" r="2" fill="#e8e0d4"/>
+        </g>
+    </defs>
+</svg>
+
+<!-- HEADER -->
 <header>
     <div class="header-titre">Tableau de bord</div>
     <div class="header-actions">
@@ -251,24 +433,114 @@
     </div>
 </header>
 
-<main>
-    <p class="intro" id="intro">Chargement…</p>
+<!-- BANDEAU DÉCORATIF HAUT -->
+<div class="deco-bandeau top-banner">
+    <svg class="mirror-strip" viewBox="0 0 1200 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="voidGradTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0d0a12"/>
+                <stop offset="100%" stop-color="#17131d"/>
+            </linearGradient>
+        </defs>
+        <path fill="url(#voidGradTop)" d="
+            M0,100 L40,78 L78,88 L120,62 L162,74 L205,48 L248,66
+            L268,52 L288,72 L318,66 L345,84 L372,70 L400,52
+            L432,64 L468,46 L495,58 L520,40 L545,62 L572,50
+            L598,72 L625,58 L655,74 L685,44 L718,58 L748,46
+            L775,68 L802,54 L828,74 L855,60 L882,78 L915,64
+            L945,52 L972,68 L1000,54 L1028,72 L1055,58 L1085,76
+            L1112,64 L1140,80 L1170,68 L1200,82 L1200,100 Z
+        "/>
+        <path fill="none" stroke="#e8e8f4" stroke-width="0.9" stroke-linejoin="miter" opacity="0.85" d="
+            M0,100 L40,78 L78,88 L120,62 L162,74 L205,48 L248,66
+            L268,52 L288,72 L318,66 L345,84 L372,70 L400,52
+            L432,64 L468,46 L495,58 L520,40 L545,62 L572,50
+            L598,72 L625,58 L655,74 L685,44 L718,58 L748,46
+            L775,68 L802,54 L828,74 L855,60 L882,78 L915,64
+            L945,52 L972,68 L1000,54 L1028,72 L1055,58 L1085,76
+            L1112,64 L1140,80 L1170,68 L1200,82
+        "/>
+    </svg>
+    <!-- Lycoris dispersées -->
+    <svg class="lycoris s1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+</div>
 
-    <div id="contenu"></div>
+<!-- CONTENU -->
+<main>
+    <div class="barre-actions">
+        <p class="intro">Tous tes arcs et actes. Clique sur un arc pour voir ses actes.</p>
+        <button class="btn primary" id="btn-nouvelle-boite">+ Nouvelle boîte</button>
+    </div>
+
+    <div id="contenu">
+        <p class="message loading">Chargement…</p>
+    </div>
 </main>
 
+<!-- BANDEAU DÉCORATIF BAS -->
+<div class="deco-bandeau bottom-banner">
+    <svg class="mirror-strip" viewBox="0 0 1200 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="voidGradBot" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#0d0a12"/>
+                <stop offset="100%" stop-color="#17131d"/>
+            </linearGradient>
+        </defs>
+        <path fill="url(#voidGradBot)" d="
+            M0,0 L40,22 L78,12 L120,38 L162,26 L205,52 L248,34
+            L268,48 L288,28 L318,34 L345,16 L372,30 L400,48
+            L432,36 L468,54 L495,42 L520,60 L545,38 L572,50
+            L598,28 L625,42 L655,26 L685,56 L718,42 L748,54
+            L775,32 L802,46 L828,26 L855,40 L882,22 L915,36
+            L945,48 L972,32 L1000,46 L1028,28 L1055,42 L1085,24
+            L1112,36 L1140,20 L1170,32 L1200,18 L1200,0 Z
+        "/>
+        <path fill="none" stroke="#e8e8f4" stroke-width="0.9" stroke-linejoin="miter" opacity="0.85" d="
+            M0,0 L40,22 L78,12 L120,38 L162,26 L205,52 L248,34
+            L268,48 L288,28 L318,34 L345,16 L372,30 L400,48
+            L432,36 L468,54 L495,42 L520,60 L545,38 L572,50
+            L598,28 L625,42 L655,26 L685,56 L718,42 L748,54
+            L775,32 L802,46 L828,26 L855,40 L882,22 L915,36
+            L945,48 L972,32 L1000,46 L1028,28 L1055,42 L1085,24
+            L1112,36 L1140,20 L1170,32 L1200,18
+        "/>
+    </svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s4" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris s2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+</div>
+
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/config.js"></script>
 <script src="data/api.js"></script>
 <script>
     const contenu = document.getElementById("contenu");
-    const intro = document.getElementById("intro");
     const headerUser = document.getElementById("header-user");
+    const btnNouvelleBoite = document.getElementById("btn-nouvelle-boite");
+
+    let toutesLesBoites = [];
+    let tousLesArcs = [];
+    let actesParArc = {};
 
     async function verifierAuth() {
         const { data } = await sb.auth.getSession();
         if (!data || !data.session || !data.session.user) {
-            // Pas connecté → retour à admin.html
             window.location.replace("admin.html");
             return null;
         }
@@ -276,27 +548,156 @@
     }
 
     async function chargerTout() {
-        // Tous les arcs (y compris non publiés)
-        const arcs = await chargerArcsTous();
+        contenu.innerHTML = '<p class="message loading">Chargement…</p>';
+        try {
+            toutesLesBoites = await chargerBoites();
+            tousLesArcs = await chargerArcsTous();
 
-        if (arcs.length === 0) {
-            contenu.innerHTML = '<div class="message error">Aucun arc dans la base.</div>';
-            return;
-        }
+            // Charger les actes pour chaque arc (en série pour simplicité)
+            actesParArc = {};
+            for (const arc of tousLesArcs) {
+                actesParArc[arc.id] = await chargerActesParArc(arc.id);
+            }
 
-        contenu.innerHTML = "";
-
-        for (const arc of arcs) {
-            const actes = await chargerActesParArc(arc.id);
-            contenu.appendChild(construireBlocArc(arc, actes));
+            afficherTout();
+        } catch (err) {
+            console.error(err);
+            contenu.innerHTML = '<p class="message error">Erreur : ' + err.message + '</p>';
         }
     }
 
-    function construireBlocArc(arc, actes) {
+    function afficherTout() {
+        contenu.innerHTML = "";
+
+        // 1. Boîtes
+        for (const boite of toutesLesBoites) {
+            contenu.appendChild(construireBlocBoite(boite));
+        }
+
+        // 2. Section "Sans boîte"
+        const arcsSansBoite = tousLesArcs.filter(a => !a.boite_id);
+        if (arcsSansBoite.length > 0) {
+            contenu.appendChild(construireBlocSansBoite(arcsSansBoite));
+        }
+
+        if (toutesLesBoites.length === 0 && arcsSansBoite.length === 0) {
+            contenu.innerHTML = '<p class="message loading">Aucun arc dans la base.</p>';
+        }
+    }
+
+    function construireBlocBoite(boite) {
+        const arcs = tousLesArcs.filter(a => a.boite_id === boite.id);
+
+        const bloc = document.createElement("div");
+        bloc.className = "boite";
+
+        const header = document.createElement("div");
+        header.className = "boite-header";
+
+        const toggle = document.createElement("span");
+        toggle.className = "boite-toggle";
+        toggle.textContent = "▾";
+        header.appendChild(toggle);
+
+        const titre = document.createElement("div");
+        titre.className = "boite-titre";
+        titre.textContent = boite.nom;
+        titre.title = "Cliquer pour renommer";
+        titre.addEventListener("click", function (e) {
+            e.stopPropagation();
+            renommerBoiteUI(boite);
+        });
+        header.appendChild(titre);
+
+        const nbEl = document.createElement("span");
+        nbEl.className = "boite-nb";
+        nbEl.textContent = arcs.length + (arcs.length > 1 ? " arcs" : " arc");
+        header.appendChild(nbEl);
+
+        const btnSuppr = document.createElement("button");
+        btnSuppr.className = "btn small";
+        btnSuppr.textContent = "Supprimer";
+        btnSuppr.title = "Supprimer cette boîte (les arcs reviendront dans Sans boîte)";
+        btnSuppr.addEventListener("click", function (e) {
+            e.stopPropagation();
+            supprimerBoiteUI(boite);
+        });
+        header.appendChild(btnSuppr);
+
+        bloc.appendChild(header);
+
+        const corps = document.createElement("div");
+        corps.className = "boite-contenu";
+
+        if (arcs.length === 0) {
+            const vide = document.createElement("div");
+            vide.className = "vide";
+            vide.textContent = "Aucun arc dans cette boîte. Utilise le sélecteur d'un arc pour le déplacer ici.";
+            corps.appendChild(vide);
+        } else {
+            arcs.forEach(arc => corps.appendChild(construireBlocArc(arc)));
+        }
+
+        bloc.appendChild(corps);
+
+        // Clic sur la flèche : plier/déplier
+        toggle.addEventListener("click", function () {
+            const ouvert = corps.style.display !== "none";
+            corps.style.display = ouvert ? "none" : "block";
+            toggle.textContent = ouvert ? "▸" : "▾";
+        });
+
+        return bloc;
+    }
+
+    function construireBlocSansBoite(arcs) {
+        const bloc = document.createElement("div");
+        bloc.className = "boite";
+        bloc.style.borderLeftColor = "var(--silver-soft)";
+
+        const header = document.createElement("div");
+        header.className = "boite-header";
+        header.style.background = "rgba(168, 168, 184, 0.04)";
+
+        const toggle = document.createElement("span");
+        toggle.className = "boite-toggle";
+        toggle.textContent = "▾";
+        header.appendChild(toggle);
+
+        const titre = document.createElement("div");
+        titre.className = "boite-titre";
+        titre.textContent = "Sans boîte";
+        titre.style.cursor = "default";
+        titre.style.fontStyle = "italic";
+        header.appendChild(titre);
+
+        const nbEl = document.createElement("span");
+        nbEl.className = "boite-nb";
+        nbEl.textContent = arcs.length + (arcs.length > 1 ? " arcs" : " arc");
+        header.appendChild(nbEl);
+
+        bloc.appendChild(header);
+
+        const corps = document.createElement("div");
+        corps.className = "boite-contenu";
+        arcs.forEach(arc => corps.appendChild(construireBlocArc(arc)));
+        bloc.appendChild(corps);
+
+        toggle.addEventListener("click", function () {
+            const ouvert = corps.style.display !== "none";
+            corps.style.display = ouvert ? "none" : "block";
+            toggle.textContent = ouvert ? "▸" : "▾";
+        });
+
+        return bloc;
+    }
+
+    function construireBlocArc(arc) {
+        const actes = actesParArc[arc.id] || [];
+
         const bloc = document.createElement("div");
         bloc.className = "arc-bloc";
 
-        // En-tête de l'arc (cliquable pour plier/déplier)
         const header = document.createElement("div");
         header.className = "arc-header";
 
@@ -310,10 +711,15 @@
         titre.textContent = arc.titre;
         header.appendChild(titre);
 
-        const nbActes = document.createElement("span");
-        nbActes.className = "arc-nb-actes";
-        nbActes.textContent = actes.length + (actes.length > 1 ? " actes" : " acte");
-        header.appendChild(nbActes);
+        // Badge bien visible
+        const badge = document.createElement("span");
+        badge.className = "arc-nb-badge";
+        const nb = document.createElement("span");
+        nb.className = "nb";
+        nb.textContent = actes.length;
+        badge.appendChild(nb);
+        badge.appendChild(document.createTextNode(actes.length > 1 ? " actes" : " acte"));
+        header.appendChild(badge);
 
         const idEl = document.createElement("div");
         idEl.className = "arc-header-id";
@@ -324,6 +730,37 @@
         statut.className = "statut " + arc.statut;
         statut.textContent = arc.statut;
         header.appendChild(statut);
+
+        // Sélecteur de boîte
+        const select = document.createElement("select");
+        select.className = "boite-select";
+        select.title = "Déplacer cet arc dans une boîte";
+
+        const optSans = document.createElement("option");
+        optSans.value = "";
+        optSans.textContent = "Sans boîte";
+        select.appendChild(optSans);
+
+        toutesLesBoites.forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b.id;
+            opt.textContent = b.nom;
+            if (arc.boite_id === b.id) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener("click", e => e.stopPropagation());
+        select.addEventListener("change", async function (e) {
+            e.stopPropagation();
+            const nouvelleBoite = select.value || null;
+            try {
+                await changerBoiteArc(arc.id, nouvelleBoite);
+                await chargerTout();
+            } catch (err) {
+                alert("Erreur : " + err.message);
+            }
+        });
+        header.appendChild(select);
 
         const btnModifier = document.createElement("button");
         btnModifier.className = "btn small";
@@ -339,7 +776,7 @@
         // Liste des actes
         const liste = document.createElement("div");
         liste.className = "actes-liste";
-        liste.style.display = "none"; // fermé par défaut
+        liste.style.display = "none";
 
         if (actes.length === 0) {
             const vide = document.createElement("div");
@@ -347,12 +784,9 @@
             vide.textContent = "Aucun acte dans cet arc.";
             liste.appendChild(vide);
         } else {
-            actes.forEach(function (acte) {
-                liste.appendChild(construireLigneActe(acte));
-            });
+            actes.forEach(acte => liste.appendChild(construireLigneActe(acte)));
         }
 
-        // Clic sur l'en-tête : plie / déplie
         header.addEventListener("click", function () {
             const ouvert = liste.style.display === "block";
             liste.style.display = ouvert ? "none" : "block";
@@ -398,27 +832,57 @@
         return ligne;
     }
 
-    async function init() {
-        const user = await verifierAuth();
-        if (!user) return;
+    // ---- Actions boîtes ----
 
-        headerUser.textContent = user.email;
-        intro.textContent = "Voici tous tes arcs et actes. Clique sur Modifier pour en éditer un.";
-
+    async function nouvelleBoiteUI() {
+        const nom = prompt("Nom de la nouvelle boîte :");
+        if (!nom || !nom.trim()) return;
         try {
+            await creerBoite(nom.trim());
             await chargerTout();
         } catch (err) {
-            console.error(err);
-            contenu.innerHTML = '<div class="message error">Erreur de chargement : ' + err.message + '</div>';
+            alert("Erreur : " + err.message);
         }
     }
+
+    async function renommerBoiteUI(boite) {
+        const nouveau = prompt("Renommer la boîte :", boite.nom);
+        if (!nouveau || !nouveau.trim() || nouveau.trim() === boite.nom) return;
+        try {
+            await renommerBoite(boite.id, nouveau.trim());
+            await chargerTout();
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        }
+    }
+
+    async function supprimerBoiteUI(boite) {
+        const ok = confirm("Supprimer la boîte \"" + boite.nom + "\" ?\nLes arcs qu'elle contient reviendront dans \"Sans boîte\".");
+        if (!ok) return;
+        try {
+            await supprimerBoite(boite.id);
+            await chargerTout();
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        }
+    }
+
+    // ---- Boutons globaux ----
 
     document.getElementById("logout-btn").addEventListener("click", async function () {
         await sb.auth.signOut();
         window.location.replace("admin.html");
     });
 
-    init();
+    btnNouvelleBoite.addEventListener("click", nouvelleBoiteUI);
+
+    // ---- Init ----
+    (async function init() {
+        const user = await verifierAuth();
+        if (!user) return;
+        headerUser.textContent = user.email;
+        await chargerTout();
+    })();
 </script>
 
 </body>
