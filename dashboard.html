@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord — Krieg Senki</title>
+    <style>
+        :root {
+            --bg: #17131d;
+            --card-bg: #1c1624;
+            --card-hover: #241d2e;
+            --text: #cdc2b8;
+            --text-soft: #8a8088;
+            --heading: #c8bcb4;
+            --silver: #a8a8b8;
+            --silver-soft: #807f8c;
+            --red: #8c1a28;
+            --red-bright: #b01828;
+            --mauve: #8a6a88;
+            --alice: #a0b8d0;
+            --border: rgba(168, 168, 184, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-titre {
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--heading);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-user {
+            font-size: 13px;
+            color: var(--text-soft);
+            font-style: italic;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 3px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+        }
+
+        .btn.small {
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 24px 80px;
+        }
+
+        .intro {
+            color: var(--text-soft);
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .arc-bloc {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--red);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .arc-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .arc-header-titre {
+            font-size: 17px;
+            color: var(--heading);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .arc-header-id {
+            font-size: 11px;
+            color: var(--text-soft);
+            font-family: Consolas, monospace;
+        }
+
+        .statut {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+        .statut.publie { color: var(--alice); background: rgba(160, 184, 208, 0.1); }
+        .statut.redaction { color: var(--mauve); background: rgba(138, 106, 136, 0.1); }
+        .statut.brouillon { color: var(--text-soft); background: rgba(138, 128, 136, 0.1); }
+
+        .actes-liste {
+            padding: 8px 0;
+        }
+
+        .acte-ligne {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            border-bottom: 1px solid rgba(168, 168, 184, 0.08);
+            flex-wrap: wrap;
+        }
+
+        .acte-ligne:last-child { border-bottom: none; }
+
+        .acte-num {
+            font-size: 12px;
+            color: var(--silver);
+            min-width: 60px;
+            font-family: Consolas, monospace;
+        }
+
+        .acte-titre {
+            flex: 1;
+            font-size: 15px;
+            color: var(--text);
+            min-width: 200px;
+        }
+
+        .acte-id {
+            font-size: 11px;
+            color: var(--text-soft);
+            font-family: Consolas, monospace;
+            min-width: 70px;
+        }
+
+        .vide {
+            padding: 12px 20px;
+            color: var(--text-soft);
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .message.error {
+            background: rgba(140, 26, 40, 0.15);
+            border-left: 3px solid var(--red-bright);
+            color: #e0a8a8;
+        }
+        .message.loading {
+            color: var(--text-soft);
+            font-style: italic;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 700px) {
+            main { padding: 20px 14px 60px; }
+            header { padding: 12px 14px; }
+            .arc-header, .acte-ligne { padding: 12px 14px; }
+            .acte-num { min-width: auto; }
+            .acte-titre { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-titre">Tableau de bord</div>
+    <div class="header-actions">
+        <span class="header-user" id="header-user"></span>
+        <a href="index.html" class="btn small">Voir le site</a>
+        <button class="btn small" id="logout-btn">Déconnexion</button>
+    </div>
+</header>
+
+<main>
+    <p class="intro" id="intro">Chargement…</p>
+
+    <div id="contenu"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/config.js"></script>
+<script src="data/api.js"></script>
+<script>
+    const contenu = document.getElementById("contenu");
+    const intro = document.getElementById("intro");
+    const headerUser = document.getElementById("header-user");
+
+    async function verifierAuth() {
+        const { data } = await sb.auth.getSession();
+        if (!data || !data.session || !data.session.user) {
+            // Pas connecté → retour à admin.html
+            window.location.replace("admin.html");
+            return null;
+        }
+        return data.session.user;
+    }
+
+    async function chargerTout() {
+        // Tous les arcs (y compris non publiés)
+        const arcs = await chargerArcsTous();
+
+        if (arcs.length === 0) {
+            contenu.innerHTML = '<div class="message error">Aucun arc dans la base.</div>';
+            return;
+        }
+
+        contenu.innerHTML = "";
+
+        for (const arc of arcs) {
+            const actes = await chargerActesParArc(arc.id);
+            contenu.appendChild(construireBlocArc(arc, actes));
+        }
+    }
+
+    function construireBlocArc(arc, actes) {
+        const bloc = document.createElement("div");
+        bloc.className = "arc-bloc";
+
+        // En-tête de l'arc
+        const header = document.createElement("div");
+        header.className = "arc-header";
+
+        const titre = document.createElement("div");
+        titre.className = "arc-header-titre";
+        titre.textContent = arc.titre;
+        header.appendChild(titre);
+
+        const idEl = document.createElement("div");
+        idEl.className = "arc-header-id";
+        idEl.textContent = arc.id;
+        header.appendChild(idEl);
+
+        const statut = document.createElement("span");
+        statut.className = "statut " + arc.statut;
+        statut.textContent = arc.statut;
+        header.appendChild(statut);
+
+        const btnModifier = document.createElement("button");
+        btnModifier.className = "btn small";
+        btnModifier.textContent = "Modifier";
+        btnModifier.addEventListener("click", function () {
+            alert("Édition d'arc : à venir à la prochaine étape.");
+        });
+        header.appendChild(btnModifier);
+
+        bloc.appendChild(header);
+
+        // Liste des actes
+        const liste = document.createElement("div");
+        liste.className = "actes-liste";
+
+        if (actes.length === 0) {
+            const vide = document.createElement("div");
+            vide.className = "vide";
+            vide.textContent = "Aucun acte dans cet arc.";
+            liste.appendChild(vide);
+        } else {
+            actes.forEach(function (acte) {
+                liste.appendChild(construireLigneActe(acte));
+            });
+        }
+
+        bloc.appendChild(liste);
+        return bloc;
+    }
+
+    function construireLigneActe(acte) {
+        const ligne = document.createElement("div");
+        ligne.className = "acte-ligne";
+
+        const num = document.createElement("div");
+        num.className = "acte-num";
+        num.textContent = "Acte " + acte.numero;
+        ligne.appendChild(num);
+
+        const titre = document.createElement("div");
+        titre.className = "acte-titre";
+        titre.textContent = acte.titre;
+        ligne.appendChild(titre);
+
+        const idEl = document.createElement("div");
+        idEl.className = "acte-id";
+        idEl.textContent = acte.id;
+        ligne.appendChild(idEl);
+
+        const statut = document.createElement("span");
+        statut.className = "statut " + acte.statut;
+        statut.textContent = acte.statut;
+        ligne.appendChild(statut);
+
+        const btnModifier = document.createElement("button");
+        btnModifier.className = "btn small";
+        btnModifier.textContent = "Modifier";
+        btnModifier.addEventListener("click", function () {
+            alert("Édition d'acte : à venir à la prochaine étape.\n\nActe : " + acte.titre);
+        });
+        ligne.appendChild(btnModifier);
+
+        return ligne;
+    }
+
+    async function init() {
+        const user = await verifierAuth();
+        if (!user) return;
+
+        headerUser.textContent = user.email;
+        intro.textContent = "Voici tous tes arcs et actes. Clique sur Modifier pour en éditer un.";
+
+        try {
+            await chargerTout();
+        } catch (err) {
+            console.error(err);
+            contenu.innerHTML = '<div class="message error">Erreur de chargement : ' + err.message + '</div>';
+        }
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", async function () {
+        await sb.auth.signOut();
+        window.location.replace("admin.html");
+    });
+
+    init();
+</script>
+
+</body>
+</html>

@@ -60,3 +60,16 @@ async function chargerActe(id) {
 async function chargerActesDuMemeArc(arcId) {
     return chargerActesParArc(arcId);
 }
+
+async function chargerArcsTous() {
+    const { data, error } = await sb
+        .from('arcs')
+        .select('*')
+        .order('ordre', { ascending: true })
+        .order('created_at', { ascending: true });
+    if (error) {
+        console.error("Erreur chargerArcsTous :", error);
+        throw error;
+    }
+    return data;
+}
