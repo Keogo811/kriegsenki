@@ -127,6 +127,72 @@
             color: var(--text);
         }
 
+        /* Styles pour le contenu HTML issu de l'éditeur Quill */
+        .texte-html p {
+            margin-bottom: 22px;
+            color: var(--text);
+        }
+
+        .texte-html h1,
+        .texte-html h2,
+        .texte-html h3 {
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-weight: normal;
+            letter-spacing: 1px;
+            margin: 1.4em 0 0.6em;
+        }
+        .texte-html h1 { font-size: 30px; }
+        .texte-html h2 { font-size: 24px; }
+        .texte-html h3 { font-size: 20px; }
+
+        .texte-html strong,
+        .texte-html b {
+            color: var(--silver-bright);
+            font-weight: bold;
+        }
+
+        .texte-html em,
+        .texte-html i {
+            color: var(--mauve);
+            font-style: italic;
+        }
+
+        .texte-html u {
+            text-decoration: underline;
+            text-decoration-color: var(--silver-soft);
+        }
+
+        .texte-html blockquote {
+            border-left: 3px solid var(--mauve);
+            padding-left: 20px;
+            margin: 22px 0;
+            color: var(--text-soft);
+            font-style: italic;
+        }
+
+        .texte-html ul,
+        .texte-html ol {
+            padding-left: 28px;
+            margin-bottom: 22px;
+        }
+
+        .texte-html li {
+            margin-bottom: 8px;
+        }
+
+        .texte-html a {
+            color: var(--alice);
+            text-decoration: underline;
+        }
+
+        .texte-html img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
         .texte .separateur {
             text-align: center;
             color: var(--silver-soft);
@@ -670,25 +736,38 @@
             return;
         }
 
-        const paragraphes = contenu
-            .split(/\r?\n\s*\r?\n/)
-            .map(function (p) { return p.trim(); })
-            .filter(function (p) { return p.length > 0; });
+        // Détecte si le contenu est du HTML (éditeur Quill)
+        // ou du texte brut (anciens actes importés).
+        const estHtml = /<[a-z][\s\S]*>/i.test(contenu);
 
-        paragraphes.forEach(function (p) {
-            if (p === "---") {
-                const sep = document.createElement("p");
-                sep.className = "separateur";
-                sep.textContent = "• • •";
-                texteEl.appendChild(sep);
-                return;
-            }
+        if (estHtml) {
+            // Contenu HTML : on l'insère tel quel dans un conteneur stylé
+            const htmlWrap = document.createElement("div");
+            htmlWrap.className = "texte-html";
+            htmlWrap.innerHTML = contenu;
+            texteEl.appendChild(htmlWrap);
+        } else {
+            // Texte brut : on découpe en paragraphes, comme avant
+            const paragraphes = contenu
+                .split(/\r?\n\s*\r?\n/)
+                .map(function (p) { return p.trim(); })
+                .filter(function (p) { return p.length > 0; });
 
-            const para = document.createElement("p");
-            para.textContent = p;
-            para.style.whiteSpace = "pre-line";
-            texteEl.appendChild(para);
-        });
+            paragraphes.forEach(function (p) {
+                if (p === "---") {
+                    const sep = document.createElement("p");
+                    sep.className = "separateur";
+                    sep.textContent = "• • •";
+                    texteEl.appendChild(sep);
+                    return;
+                }
+
+                const para = document.createElement("p");
+                para.textContent = p;
+                para.style.whiteSpace = "pre-line";
+                texteEl.appendChild(para);
+            });
+        }
 
         window.scrollTo({ top: 0, behavior: "instant" });
     }
