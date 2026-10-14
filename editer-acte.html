@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditer — Krieg Senki</title>
+
+    <!-- Quill (éditeur visuel) -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #17131d;
+            --card-bg: #1c1624;
+            --card-hover: #241d2e;
+            --text: #cdc2b8;
+            --text-soft: #8a8088;
+            --heading: #c8bcb4;
+            --silver: #a8a8b8;
+            --silver-soft: #807f8c;
+            --red: #8c1a28;
+            --red-bright: #b01828;
+            --mauve: #8a6a88;
+            --alice: #a0b8d0;
+            --border: rgba(168, 168, 184, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ---- Barre supérieure sticky ---- */
+        .topbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .back-link {
+            color: var(--silver);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        .back-link:hover { color: var(--red-bright); border-bottom-color: var(--red-bright); }
+
+        .topbar-id {
+            font-size: 11px;
+            color: var(--text-soft);
+            font-family: Consolas, monospace;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .save-status {
+            font-size: 12px;
+            color: var(--text-soft);
+            font-style: italic;
+        }
+        .save-status.saved { color: var(--alice); }
+        .save-status.unsaved { color: #e0a8b0; }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 3px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover { background: var(--card-hover); border-color: var(--red-bright); color: var(--red-bright); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.primary {
+            background: rgba(140, 26, 40, 0.2);
+            border-color: var(--red);
+            color: #ffd0d6;
+        }
+        .btn.primary:hover {
+            background: rgba(140, 26, 40, 0.35);
+            border-color: var(--red-bright);
+            color: #ffe0e4;
+        }
+
+        /* ---- Contenu ---- */
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 24px 120px;
+        }
+
+        .champ-titre {
+            margin-bottom: 18px;
+        }
+
+        .champ-titre label,
+        .champ-statut label {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-bottom: 6px;
+        }
+
+        #input-titre {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--red);
+            border-radius: 4px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 22px;
+            transition: border-color 0.2s ease;
+        }
+        #input-titre:focus {
+            outline: none;
+            border-color: var(--red);
+        }
+
+        .champ-statut {
+            margin-bottom: 22px;
+        }
+
+        #select-statut {
+            padding: 8px 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text);
+            font-family: Georgia, serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #select-statut:focus { outline: none; border-color: var(--red); }
+
+        /* ---- Éditeur Quill ---- */
+        .editor-wrap {
+            margin-bottom: 22px;
+        }
+
+        /* Overrides du thème Quill pour notre palette */
+        .ql-toolbar.ql-snow {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            padding: 8px 12px;
+        }
+
+        .ql-container.ql-snow {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0 0 4px 4px;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 17px;
+            color: var(--text);
+        }
+
+        .ql-editor {
+            color: var(--text);
+            line-height: 1.85;
+            min-height: 460px;
+            padding: 26px 28px;
+        }
+
+        .ql-editor.ql-blank::before {
+            color: var(--text-soft);
+            font-style: italic;
+        }
+
+        .ql-editor p {
+            margin-bottom: 16px;
+        }
+
+        .ql-editor h1,
+        .ql-editor h2,
+        .ql-editor h3 {
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-weight: normal;
+            letter-spacing: 1px;
+            margin-top: 1.4em;
+            margin-bottom: 0.6em;
+        }
+        .ql-editor h1 { font-size: 26px; }
+        .ql-editor h2 { font-size: 22px; }
+        .ql-editor h3 { font-size: 19px; }
+
+        .ql-editor blockquote {
+            border-left: 3px solid var(--mauve);
+            padding-left: 18px;
+            margin: 18px 0;
+            color: var(--text-soft);
+            font-style: italic;
+        }
+
+        .ql-editor ul,
+        .ql-editor ol {
+            padding-left: 26px;
+            margin-bottom: 16px;
+        }
+
+        .ql-editor a {
+            color: var(--alice);
+            text-decoration: underline;
+        }
+
+        /* Icônes de la barre d'outils */
+        .ql-snow .ql-stroke { stroke: var(--text); }
+        .ql-snow .ql-fill { fill: var(--text); }
+        .ql-snow .ql-picker { color: var(--text); }
+        .ql-snow .ql-picker-label { color: var(--text); }
+        .ql-snow .ql-picker-options {
+            background: var(--card-bg);
+            border-color: var(--border);
+        }
+        .ql-snow .ql-picker-item:hover,
+        .ql-snow .ql-picker-item.ql-selected { color: var(--red-bright); }
+        .ql-snow button:hover .ql-stroke,
+        .ql-snow button.ql-active .ql-stroke { stroke: var(--red-bright); }
+        .ql-snow button:hover .ql-fill,
+        .ql-snow button.ql-active .ql-fill { fill: var(--red-bright); }
+        .ql-snow .ql-tooltip {
+            background: var(--card-bg);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        .ql-snow .ql-tooltip input[type=text] {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        /* ---- Pied de page ---- */
+        .pied-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 14px 4px;
+            font-size: 13px;
+            color: var(--text-soft);
+            font-family: Consolas, monospace;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.visible { display: block; }
+        .message.error {
+            background: rgba(140, 26, 40, 0.15);
+            border-left: 3px solid var(--red-bright);
+            color: #e0a8a8;
+        }
+        .message.success {
+            background: rgba(160, 184, 208, 0.1);
+            border-left: 3px solid var(--alice);
+            color: var(--alice);
+        }
+        .message.loading { color: var(--text-soft); font-style: italic; display: block; }
+
+        @media (max-width: 700px) {
+            main { padding: 16px 14px 100px; }
+            .topbar { padding: 10px 14px; }
+            #input-titre { font-size: 18px; padding: 12px 14px; }
+            .ql-editor { padding: 18px 16px; min-height: 380px; font-size: 16px; }
+            .topbar-id { display: none; }
+            .btn { padding: 8px 14px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-left">
+        <a href="dashboard.html" class="back-link" id="back-link">← Tableau de bord</a>
+        <span class="topbar-id" id="topbar-id"></span>
+    </div>
+    <div class="topbar-right">
+        <span class="save-status" id="save-status"></span>
+        <button class="btn primary" id="btn-save">Enregistrer</button>
+    </div>
+</div>
+
+<main>
+    <div class="message loading" id="message">Chargement…</div>
+
+    <div class="champ-titre">
+        <label for="input-titre">Titre</label>
+        <input type="text" id="input-titre" placeholder="Titre de l'acte">
+    </div>
+
+    <div class="champ-statut">
+        <label for="select-statut">Statut</label>
+        <select id="select-statut">
+            <option value="publie">Publié</option>
+            <option value="redaction">Rédaction</option>
+            <option value="brouillon">Brouillon</option>
+        </select>
+    </div>
+
+    <div class="editor-wrap">
+        <div id="editor"></div>
+    </div>
+
+    <div class="pied-info">
+        <span id="compteur">0 caractère</span>
+        <span id="derniere-maj"></span>
+    </div>
+</main>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/config.js"></script>
+<script src="data/api.js"></script>
+<script>
+    // ---------- Initialisation de Quill ----------
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Écris ton acte ici…',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['blockquote', 'link'],
+                ['clean']
+            ]
+        }
+    });
+
+    // ---------- Références UI ----------
+    const messageEl = document.getElementById("message");
+    const inputTitre = document.getElementById("input-titre");
+    const selectStatut = document.getElementById("select-statut");
+    const btnSave = document.getElementById("btn-save");
+    const saveStatus = document.getElementById("save-status");
+    const compteur = document.getElementById("compteur");
+    const derniereMaj = document.getElementById("derniere-maj");
+    const topbarId = document.getElementById("topbar-id");
+    const backLink = document.getElementById("back-link");
+
+    // ---------- État ----------
+    let acteEnCours = null;
+    let modifie = false;
+
+    // ---------- Utilitaires ----------
+    function afficherMessage(texte, type) {
+        messageEl.textContent = texte;
+        messageEl.className = "message visible " + type;
+    }
+
+    function cacherMessage() {
+        messageEl.className = "message";
+    }
+
+    function texteVersHtml(texte) {
+        // Si le texte contient déjà du HTML, on le garde tel quel
+        if (/<[a-z][\s\S]*>/i.test(texte)) return texte;
+
+        // Sinon, on convertit les paragraphes en <p>...</p>
+        const paragraphes = texte
+            .split(/\r?\n\s*\r?\n/)
+            .map(function (p) { return p.trim(); })
+            .filter(function (p) { return p.length > 0; });
+
+        return paragraphes.map(function (p) {
+            const safe = p
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>');
+            return '<p>' + safe + '</p>';
+        }).join('');
+    }
+
+    function compterCaracteres() {
+        const texte = quill.getText() || "";
+        // Retire le retour à la ligne final que Quill ajoute
+        const propre = texte.replace(/\n$/, "");
+        const nb = propre.length;
+        compteur.textContent = nb + " caractère" + (nb > 1 ? "s" : "");
+    }
+
+    function marquerModifie() {
+        modifie = true;
+        saveStatus.textContent = "Non enregistré";
+        saveStatus.className = "save-status unsaved";
+    }
+
+    function marquerEnregistre() {
+        modifie = false;
+        saveStatus.textContent = "Enregistré";
+        saveStatus.className = "save-status saved";
+    }
+
+    // ---------- Détection des modifications ----------
+    inputTitre.addEventListener("input", marquerModifie);
+    selectStatut.addEventListener("change", marquerModifie);
+    quill.on('text-change', function () {
+        marquerModifie();
+        compterCaracteres();
+    });
+
+    // ---------- Chargement de l'acte ----------
+    async function charger() {
+        // Vérifier qu'on est connecté
+        const { data: sessionData } = await sb.auth.getSession();
+        if (!sessionData || !sessionData.session) {
+            window.location.replace("admin.html");
+            return;
+        }
+
+        const id = window.location.hash.slice(1);
+        if (!id) {
+            afficherMessage("Aucun acte spécifié dans l'URL.", "error");
+            return;
+        }
+
+        try {
+            const acte = await chargerActe(id);
+            if (!acte) {
+                afficherMessage("Acte introuvable : " + id, "error");
+                return;
+            }
+
+            acteEnCours = acte;
+
+            // Remplir les champs
+            inputTitre.value = acte.titre || "";
+            selectStatut.value = acte.statut || "brouillon";
+            topbarId.textContent = acte.id;
+
+            // Charger le contenu dans Quill
+            const html = texteVersHtml(acte.contenu || "");
+            quill.clipboard.dangerouslyPasteHTML(html);
+
+            // Info dernière modification
+            if (acte.updated_at) {
+                const d = new Date(acte.updated_at);
+                derniereMaj.textContent = "Modifié le " + d.toLocaleDateString('fr-FR') + " à " + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Lien retour
+            backLink.href = "dashboard.html";
+
+            cacherMessage();
+            compterCaracteres();
+            marquerEnregistre();
+        } catch (err) {
+            console.error(err);
+            afficherMessage("Erreur de chargement : " + err.message, "error");
+        }
+    }
+
+    // ---------- Enregistrement ----------
+    async function enregistrer() {
+        if (!acteEnCours) return;
+
+        const titre = inputTitre.value.trim();
+        const statut = selectStatut.value;
+        const contenu = quill.root.innerHTML;
+
+        if (!titre) {
+            afficherMessage("Le titre ne peut pas être vide.", "error");
+            return;
+        }
+
+        btnSave.disabled = true;
+        btnSave.textContent = "Enregistrement…";
+        cacherMessage();
+
+        try {
+            await modifierActe(acteEnCours.id, {
+                titre: titre,
+                statut: statut,
+                contenu: contenu,
+                updated_at: new Date().toISOString()
+            });
+
+            marquerEnregistre();
+            derniereMaj.textContent = "Modifié à l'instant";
+            afficherMessage("Enregistré.", "success");
+            setTimeout(cacherMessage, 2000);
+        } catch (err) {
+            console.error(err);
+            afficherMessage("Erreur : " + err.message, "error");
+        } finally {
+            btnSave.disabled = false;
+            btnSave.textContent = "Enregistrer";
+        }
+    }
+
+    btnSave.addEventListener("click", enregistrer);
+
+    // Ctrl+S / Cmd+S
+    document.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+            e.preventDefault();
+            enregistrer();
+        }
+    });
+
+    // Avertir si on quitte sans sauvegarder
+    window.addEventListener("beforeunload", function (e) {
+        if (modifie) {
+            e.preventDefault();
+            e.returnValue = "";
+        }
+    });
+
+    // ---------- Démarrage ----------
+    charger();
+</script>
+
+</body>
+</html>
