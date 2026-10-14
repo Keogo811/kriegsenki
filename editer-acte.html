@@ -17,6 +17,7 @@
             --text-soft: #8a8088;
             --heading: #c8bcb4;
             --silver: #a8a8b8;
+            --silver-bright: #d8d8e4;
             --silver-soft: #807f8c;
             --red: #8c1a28;
             --red-bright: #b01828;
@@ -37,12 +38,12 @@
             min-height: 100vh;
         }
 
-        /* ---- Colonnes de lycoris (fixes, côté gauche et droite) ---- */
+        /* ---- Colonnes latérales (lycoris + éclats + étoiles) ---- */
         .lycoris-side {
             position: fixed;
             top: 0;
             bottom: 0;
-            width: 130px;
+            width: 140px;
             pointer-events: none;
             z-index: 5;
             display: block;
@@ -50,6 +51,7 @@
         .lycoris-side.left { left: 0; }
         .lycoris-side.right { right: 0; }
 
+        /* --- Lycoris --- */
         .lycoris-side .fleur {
             position: absolute;
             width: 70px;
@@ -58,7 +60,34 @@
             filter: drop-shadow(0 0 6px rgba(140, 26, 40, 0.35));
         }
 
-        /* Colonne gauche : positions verticales variées */
+        /* --- Éclats de miroir --- */
+        .lycoris-side .shard {
+            position: absolute;
+            filter: drop-shadow(0 0 5px rgba(184, 184, 196, 0.45));
+            pointer-events: none;
+        }
+        .lycoris-side .shard.sm { width: 16px; height: 16px; opacity: 0.55; }
+        .lycoris-side .shard.md { width: 26px; height: 26px; opacity: 0.7; }
+        .lycoris-side .shard.lg { width: 36px; height: 36px; opacity: 0.8; }
+
+        /* --- Étoiles --- */
+        .lycoris-side .star {
+            position: absolute;
+            filter: drop-shadow(0 0 5px rgba(216, 216, 228, 0.7));
+            pointer-events: none;
+        }
+        .lycoris-side .star.sm { width: 10px; height: 10px; opacity: 0.7; }
+        .lycoris-side .star.md { width: 16px; height: 16px; opacity: 0.85; }
+        .lycoris-side .star.lg { width: 22px; height: 22px; opacity: 0.95; }
+        .lycoris-side .star.alice {
+            filter: drop-shadow(0 0 6px rgba(160, 184, 208, 0.75));
+        }
+
+        /* ==========================================================
+           Positions — colonne GAUCHE
+           ========================================================== */
+
+        /* Lycoris */
         .lycoris-side.left .f1 { top: 4%;  left: 8px;  width: 90px; height: 90px; opacity: 0.9; }
         .lycoris-side.left .f2 { top: 14%; left: 42px; width: 55px; height: 55px; opacity: 0.7; }
         .lycoris-side.left .f3 { top: 26%; left: 4px;  width: 68px; height: 68px; }
@@ -68,7 +97,26 @@
         .lycoris-side.left .f7 { top: 74%; left: 6px;  width: 72px; height: 72px; }
         .lycoris-side.left .f8 { top: 86%; left: 34px; width: 60px; height: 60px; opacity: 0.75; }
 
-        /* Colonne droite : décalage pour ne pas être identique à la gauche */
+        /* Éclats gauches */
+        .lycoris-side.left .sh1 { top: 17%; left: 55px; }
+        .lycoris-side.left .sh2 { top: 41%; left: 5px;  }
+        .lycoris-side.left .sh3 { top: 65%; left: 60px; }
+        .lycoris-side.left .sh4 { top: 89%; left: 20px; }
+
+        /* Étoiles gauches */
+        .lycoris-side.left .st1 { top: 9%;  left: 60px; }
+        .lycoris-side.left .st2 { top: 20%; left: 15px; }
+        .lycoris-side.left .st3 { top: 32%; left: 55px; }
+        .lycoris-side.left .st4 { top: 44%; left: 60px; }
+        .lycoris-side.left .st5 { top: 56%; left: 20px; }
+        .lycoris-side.left .st6 { top: 68%; left: 65px; }
+        .lycoris-side.left .st7 { top: 80%; left: 15px; }
+        .lycoris-side.left .st8 { top: 92%; left: 55px; }
+
+        /* ==========================================================
+           Positions — colonne DROITE
+           ========================================================== */
+
         .lycoris-side.right .f1 { top: 8%;  right: 6px;  width: 82px; height: 82px; opacity: 0.85; }
         .lycoris-side.right .f2 { top: 20%; right: 40px; width: 52px; height: 52px; opacity: 0.65; }
         .lycoris-side.right .f3 { top: 32%; right: 8px;  width: 70px; height: 70px; }
@@ -77,6 +125,22 @@
         .lycoris-side.right .f6 { top: 68%; right: 42px; width: 48px; height: 48px; opacity: 0.55; }
         .lycoris-side.right .f7 { top: 80%; right: 10px; width: 76px; height: 76px; }
         .lycoris-side.right .f8 { top: 92%; right: 36px; width: 54px; height: 54px; opacity: 0.7; }
+
+        /* Éclats droits */
+        .lycoris-side.right .sh1 { top: 11%; right: 30px; }
+        .lycoris-side.right .sh2 { top: 35%; right: 60px; }
+        .lycoris-side.right .sh3 { top: 59%; right: 5px;  }
+        .lycoris-side.right .sh4 { top: 83%; right: 55px; }
+
+        /* Étoiles droites */
+        .lycoris-side.right .st1 { top: 4%;  right: 60px; }
+        .lycoris-side.right .st2 { top: 14%; right: 10px; }
+        .lycoris-side.right .st3 { top: 26%; right: 55px; }
+        .lycoris-side.right .st4 { top: 38%; right: 15px; }
+        .lycoris-side.right .st5 { top: 50%; right: 62px; }
+        .lycoris-side.right .st6 { top: 62%; right: 8px;  }
+        .lycoris-side.right .st7 { top: 74%; right: 50px; }
+        .lycoris-side.right .st8 { top: 86%; right: 20px; }
 
         /* ---- Barre supérieure sticky ---- */
         .topbar {
@@ -167,9 +231,7 @@
             z-index: 10;
         }
 
-        .champ-titre {
-            margin-bottom: 18px;
-        }
+        .champ-titre { margin-bottom: 18px; }
 
         .champ-titre label,
         .champ-statut label {
@@ -193,14 +255,9 @@
             font-size: 22px;
             transition: border-color 0.2s ease;
         }
-        #input-titre:focus {
-            outline: none;
-            border-color: var(--red);
-        }
+        #input-titre:focus { outline: none; border-color: var(--red); }
 
-        .champ-statut {
-            margin-bottom: 22px;
-        }
+        .champ-statut { margin-bottom: 22px; }
 
         #select-statut {
             padding: 8px 12px;
@@ -215,9 +272,7 @@
         #select-statut:focus { outline: none; border-color: var(--red); }
 
         /* ---- Éditeur Quill ---- */
-        .editor-wrap {
-            margin-bottom: 22px;
-        }
+        .editor-wrap { margin-bottom: 22px; }
 
         .ql-toolbar.ql-snow {
             background: var(--card-bg);
@@ -248,9 +303,7 @@
             font-style: italic;
         }
 
-        .ql-editor p {
-            margin-bottom: 16px;
-        }
+        .ql-editor p { margin-bottom: 16px; }
 
         .ql-editor h1,
         .ql-editor h2,
@@ -345,24 +398,35 @@
 
         /* ---- Responsive ---- */
         @media (max-width: 1200px) {
-            /* Réduit les colonnes quand l'espace devient serré */
-            .lycoris-side { width: 90px; }
+            .lycoris-side { width: 100px; }
             .lycoris-side .fleur { transform: scale(0.8); transform-origin: center; }
+            .lycoris-side .shard { transform: scale(0.85); }
+            .lycoris-side .star { transform: scale(0.9); }
         }
 
         @media (max-width: 1000px) {
-            /* Réduit encore */
             .lycoris-side { width: 70px; }
             .lycoris-side .fleur { transform: scale(0.65); }
+            .lycoris-side .shard { transform: scale(0.75); }
+            .lycoris-side .star { transform: scale(0.8); }
+            /* On cache quelques éléments pour désencombrer */
             .lycoris-side.left .f2,
             .lycoris-side.left .f4,
             .lycoris-side.left .f6,
             .lycoris-side.right .f2,
             .lycoris-side.right .f6 { display: none; }
+            .lycoris-side.left .st2,
+            .lycoris-side.left .st4,
+            .lycoris-side.left .st6,
+            .lycoris-side.right .st2,
+            .lycoris-side.right .st4,
+            .lycoris-side.right .st6 { display: none; }
+            .lycoris-side.left .sh2,
+            .lycoris-side.right .sh3 { display: none; }
         }
 
         @media (max-width: 800px) {
-            /* Sur mobile : on cache les côtés pour ne pas gêner l'écriture */
+            /* Sur mobile : on cache tout le décor latéral */
             .lycoris-side { display: none; }
         }
 
@@ -378,9 +442,12 @@
 </head>
 <body>
 
-<!-- DÉFINITION DE LA LYCORIS (réutilisable) -->
+<!-- ============================================================
+     DÉFINITIONS RÉUTILISABLES
+     ============================================================ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
+        <!-- Lycoris -->
         <g id="lycoris-real">
             <g fill="#8c1a28" fill-opacity="0.9" stroke="#b01828" stroke-width="0.6">
                 <path d="M50,50 C48,38 44,24 40,10 C38,3 42,0 45,4 C50,16 54,32 50,50 Z"/>
@@ -408,11 +475,43 @@
             </g>
             <circle cx="50" cy="50" r="2" fill="#e8e0d4"/>
         </g>
+
+        <!-- Étoile 4 branches (sparkle) -->
+        <g id="star-4">
+            <path d="M50,4 Q53,47 96,50 Q53,53 50,96 Q47,53 4,50 Q47,47 50,4 Z"
+                  fill="#d8d8e4" fill-opacity="0.95"/>
+            <circle cx="50" cy="50" r="3" fill="#ffffff" fill-opacity="0.9"/>
+        </g>
+
+        <!-- Éclat de miroir angulaire -->
+        <linearGradient id="shardGrad" x1="0" y1="0" x2="0.7" y2="1">
+            <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.95"/>
+            <stop offset="45%" stop-color="#a8a8b8" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#4a4258" stop-opacity="0.9"/>
+        </linearGradient>
+
+        <g id="shard-piece">
+            <polygon points="50,6 84,34 68,86 22,72 14,26"
+                     fill="url(#shardGrad)"
+                     stroke="#e8e8f4"
+                     stroke-width="0.7"
+                     stroke-opacity="0.85"
+                     stroke-linejoin="miter"/>
+            <!-- Reflet interne -->
+            <polyline points="50,6 34,42 68,86"
+                      fill="none"
+                      stroke="#ffffff"
+                      stroke-width="0.5"
+                      stroke-opacity="0.5"/>
+        </g>
     </defs>
 </svg>
 
-<!-- COLONNE DE LYCORIS — GAUCHE -->
+<!-- ============================================================
+     COLONNE GAUCHE — lycoris + éclats + étoiles
+     ============================================================ -->
 <div class="lycoris-side left" aria-hidden="true">
+    <!-- Lycoris -->
     <svg class="fleur f1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
@@ -421,10 +520,29 @@
     <svg class="fleur f6" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f7" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f8" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+
+    <!-- Éclats -->
+    <svg class="shard sm sh1" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard md sh2" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard sm sh3" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard md sh4" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+
+    <!-- Étoiles -->
+    <svg class="star sm st1" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star md st2" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st3" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star alice md st4" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st5" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star md st6" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st7" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star alice lg st8" viewBox="0 0 100 100"><use href="#star-4"/></svg>
 </div>
 
-<!-- COLONNE DE LYCORIS — DROITE -->
+<!-- ============================================================
+     COLONNE DROITE — lycoris + éclats + étoiles
+     ============================================================ -->
 <div class="lycoris-side right" aria-hidden="true">
+    <!-- Lycoris -->
     <svg class="fleur f1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f2" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
@@ -433,6 +551,22 @@
     <svg class="fleur f6" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f7" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
     <svg class="fleur f8" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+
+    <!-- Éclats -->
+    <svg class="shard sm sh1" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard md sh2" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard sm sh3" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+    <svg class="shard md sh4" viewBox="0 0 100 100"><use href="#shard-piece"/></svg>
+
+    <!-- Étoiles -->
+    <svg class="star md st1" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st2" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star alice md st3" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st4" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star md st5" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st6" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star alice lg st7" viewBox="0 0 100 100"><use href="#star-4"/></svg>
+    <svg class="star sm st8" viewBox="0 0 100 100"><use href="#star-4"/></svg>
 </div>
 
 <!-- BARRE SUPÉRIEURE -->
@@ -480,7 +614,7 @@
 <script src="data/config.js"></script>
 <script src="data/api.js"></script>
 <script>
-    // ---------- Initialisation de Quill ----------
+    // ---------- Quill ----------
     const quill = new Quill('#editor', {
         theme: 'snow',
         placeholder: 'Écris ton acte ici…',
@@ -564,7 +698,7 @@
         compterCaracteres();
     });
 
-    // ---------- Chargement de l'acte ----------
+    // ---------- Chargement ----------
     async function charger() {
         const { data: sessionData } = await sb.auth.getSession();
         if (!sessionData || !sessionData.session) {
