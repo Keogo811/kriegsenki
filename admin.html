@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Krieg Senki</title>
+    <style>
+        :root {
+            --bg: #17131d;
+            --card-bg: #1c1624;
+            --card-hover: #241d2e;
+            --text: #cdc2b8;
+            --text-soft: #8a8088;
+            --heading: #c8bcb4;
+            --silver: #a8a8b8;
+            --silver-soft: #807f8c;
+            --red: #8c1a28;
+            --red-bright: #b01828;
+            --mauve: #8a6a88;
+            --alice: #a0b8d0;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 19px;
+            line-height: 1.9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .deco { width: 100%; position: relative; pointer-events: none; }
+        .deco.top { margin-bottom: -30px; }
+
+        .mirror-strip { width: 100%; height: 130px; display: block; }
+
+        .lycoris {
+            position: absolute;
+            width: 130px; height: 130px;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .lycoris.h1 { top: 20px; left: 8%; }
+        .lycoris.h2 { top: 0; left: 33%; }
+        .lycoris.h3 { top: 30px; left: 60%; }
+        .lycoris.h4 { top: 5px; right: 12%; }
+        .lycoris.small { width: 75px; height: 75px; opacity: 0.7; }
+
+        .vine {
+            position: fixed;
+            top: 0; bottom: 0;
+            width: 70px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.55;
+        }
+        .vine.left { left: 0; }
+        .vine.right { right: 0; transform: scaleX(-1); }
+        .vine svg { width: 100%; height: 100%; }
+
+        main {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 60px 30px 110px;
+            position: relative;
+            z-index: 4;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 28px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            color: var(--heading);
+            text-align: center;
+            margin: 0 0 40px;
+            text-shadow:
+                0 0 18px rgba(200, 200, 220, 0.55),
+                0 0 40px rgba(176, 24, 40, 0.28);
+        }
+
+        .divider {
+            width: 100px;
+            height: 1px;
+            margin: 0 auto 40px;
+            background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        label {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid rgba(168, 168, 184, 0.25);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: Georgia, serif;
+            font-size: 17px;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--red);
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 14px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 4px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 14px 18px;
+            border-radius: 4px;
+            font-size: 15px;
+            display: none;
+        }
+
+        .message.visible { display: block; }
+
+        .message.error {
+            background: rgba(140, 26, 40, 0.15);
+            border-left: 3px solid var(--red-bright);
+            color: #e0a8a8;
+        }
+
+        .message.success {
+            background: rgba(160, 184, 208, 0.1);
+            border-left: 3px solid var(--alice);
+            color: var(--alice);
+        }
+
+        .connected {
+            display: none;
+            text-align: center;
+        }
+
+        .connected.visible { display: block; }
+
+        .connected p {
+            margin-bottom: 20px;
+        }
+
+        .connected .email {
+            color: var(--alice);
+            font-style: italic;
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 14px 26px;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 4px;
+            color: var(--heading);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 14px;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dashboard-link:hover {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+        }
+
+        @media (max-width: 800px) {
+            body { font-size: 17px; }
+            h1 { font-size: 23px; }
+            main { padding: 40px 20px 80px; }
+            .mirror-strip { height: 80px; }
+            .lycoris { width: 80px; height: 80px; }
+            .lycoris.small { width: 50px; height: 50px; }
+            .vine { width: 40px; opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- DÉFINITIONS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <g id="lycoris-real">
+            <g fill="#8c1a28" fill-opacity="0.85" stroke="#b01828" stroke-width="0.6">
+                <path d="M50,50 C48,38 44,24 40,10 C38,3 42,0 45,4 C50,16 54,32 50,50 Z"/>
+                <path d="M50,50 C60,42 74,32 88,22 C94,18 97,22 93,25 C80,34 64,44 50,50 Z"/>
+                <path d="M50,50 C62,56 78,62 94,66 C100,68 98,72 93,71 C76,68 60,60 50,50 Z"/>
+                <path d="M50,50 C52,62 56,76 60,90 C62,97 58,100 55,96 C50,84 46,68 50,50 Z"/>
+                <path d="M50,50 C40,58 24,64 8,66 C2,68 2,72 8,71 C24,68 40,60 50,50 Z"/>
+                <path d="M50,50 C38,42 24,34 8,25 C2,22 2,26 8,28 C24,36 40,44 50,50 Z"/>
+            </g>
+            <g stroke="#b01828" stroke-width="0.7" fill="none" stroke-linecap="round">
+                <path d="M50,50 Q48,26 46,4"/>
+                <path d="M50,50 Q68,32 92,14"/>
+                <path d="M50,50 Q70,68 94,80"/>
+                <path d="M50,50 Q52,72 52,96"/>
+                <path d="M50,50 Q30,68 8,82"/>
+                <path d="M50,50 Q30,30 6,16"/>
+            </g>
+            <g fill="#d0c8c0">
+                <circle cx="46" cy="4" r="1.4"/>
+                <circle cx="92" cy="14" r="1.4"/>
+                <circle cx="94" cy="80" r="1.4"/>
+                <circle cx="52" cy="96" r="1.4"/>
+                <circle cx="8" cy="82" r="1.4"/>
+                <circle cx="6" cy="16" r="1.4"/>
+            </g>
+            <circle cx="50" cy="50" r="2" fill="#e8e0d4"/>
+        </g>
+        <g id="lycoris-mini">
+            <use href="#lycoris-real" transform="scale(0.85) translate(9,9)"/>
+        </g>
+    </defs>
+</svg>
+
+<!-- DÉCORATION HAUT -->
+<div class="deco top">
+    <svg class="mirror-strip" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="crackFadeTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d8d8e4" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#d8d8e4" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="shardSilverTop" x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#a8a8b8" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="voidDepthTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#08060c"/>
+                <stop offset="60%" stop-color="#0d0a12"/>
+                <stop offset="100%" stop-color="#161024"/>
+            </linearGradient>
+            <radialGradient id="glowPointTop" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#e8e8f4" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="shardShadowTop" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1.4"/>
+                <feOffset dx="0.6" dy="1.2" result="offsetblur"/>
+                <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+        </defs>
+        <line x1="0" y1="1" x2="1200" y2="1" stroke="#a8a8b8" stroke-width="0.7" opacity="0.55"/>
+        <path fill="url(#voidDepthTop)" d="
+            M0,0 L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
+            L268,52 L288,18 L318,24 L345,12 L372,34 L400,28
+            L432,55 L468,42 L495,62 L520,50 L545,28 L572,38
+            L598,20 L625,44 L655,36 L685,68 L718,52 L748,66
+            L775,42 L802,30 L828,52 L855,40 L882,58 L915,46
+            L945,62 L972,44 L1000,30 L1028,50 L1055,36 L1085,54
+            L1112,38 L1140,44 L1170,26 L1200,32 L1200,0 Z
+        "/>
+        <path fill="none" stroke="#050308" stroke-width="1.6" stroke-linejoin="miter" opacity="0.9" d="
+            M0,2 L34,24 L77,17 L119,44 L161,32 L204,60 L247,42
+            L267,54 L287,20 L317,26 L344,14 L371,36 L399,30
+            L431,57 L467,44 L494,64 L519,52 L544,30 L571,40
+            L597,22 L624,46 L654,38 L684,70 L717,54 L747,68
+            L774,44 L801,32 L827,54 L854,42 L881,60 L914,48
+            L944,64 L971,46 L999,32 L1027,52 L1054,38 L1084,56
+            L1111,40 L1139,46 L1169,28 L1200,34
+        "/>
+        <path fill="none" stroke="#e8e8f4" stroke-width="1.1" stroke-linejoin="miter" opacity="0.95" d="
+            M0,0 L35,22 L78,15 L120,42 L162,30 L205,58 L248,40
+            L268,52 L288,18 L318,24 L345,12 L372,34 L400,28
+            L432,55 L468,42 L495,62 L520,50 L545,28 L572,38
+            L598,20 L625,44 L655,36 L685,68 L718,52 L748,66
+            L775,42 L802,30 L828,52 L855,40 L882,58 L915,46
+            L945,62 L972,44 L1000,30 L1028,50 L1055,36 L1085,54
+            L1112,38 L1140,44 L1170,26 L1200,32
+        "/>
+        <g stroke="url(#crackFadeTop)" stroke-width="1" fill="none" stroke-linejoin="miter" stroke-linecap="round">
+            <path d="M205,58 L192,76 L208,92 L196,112"/>
+            <path d="M120,42 L102,58 L84,76"/>
+            <path d="M248,40 L272,54 L265,78 L282,96"/>
+            <path d="M288,18 L308,30 L322,50"/>
+            <path d="M432,55 L416,74 L432,94 L418,114"/>
+            <path d="M468,42 L488,60 L482,82"/>
+            <path d="M400,28 L382,46 L364,64"/>
+            <path d="M520,50 L540,66 L552,88"/>
+            <path d="M685,68 L670,88 L686,108"/>
+            <path d="M718,52 L738,70 L732,94"/>
+            <path d="M655,36 L638,54 L620,72"/>
+            <path d="M775,42 L792,60 L805,82"/>
+            <path d="M882,58 L865,78 L882,98"/>
+            <path d="M915,46 L935,64 L930,88"/>
+            <path d="M855,40 L838,56 L820,74"/>
+            <path d="M1000,30 L1018,48 L1030,70"/>
+            <path d="M1085,54 L1102,72 L1115,92"/>
+            <path d="M1140,44 L1158,62 L1172,82"/>
+        </g>
+        <g stroke="#c8c8d8" stroke-width="0.55" fill="none" opacity="0.6" stroke-linecap="round" stroke-linejoin="miter">
+            <path d="M192,76 L176,72 L170,82"/>
+            <path d="M208,92 L224,96 L230,88"/>
+            <path d="M102,58 L88,54 L82,62"/>
+            <path d="M272,54 L288,50 L296,60"/>
+            <path d="M416,74 L400,70 L394,80"/>
+            <path d="M432,94 L448,98 L454,90"/>
+            <path d="M488,60 L504,56 L512,66"/>
+            <path d="M382,46 L366,42 L360,52"/>
+            <path d="M670,88 L654,84 L648,94"/>
+            <path d="M738,70 L754,66 L762,76"/>
+            <path d="M638,54 L622,50 L616,60"/>
+            <path d="M792,60 L808,56 L816,66"/>
+            <path d="M865,78 L849,74 L843,84"/>
+            <path d="M935,64 L951,60 L959,70"/>
+            <path d="M838,56 L822,52 L816,62"/>
+            <path d="M1018,48 L1034,44 L1042,54"/>
+            <path d="M1102,72 L1118,68 L1126,78"/>
+            <path d="M1158,62 L1174,58 L1182,68"/>
+        </g>
+        <g>
+            <circle cx="205" cy="58" r="6" fill="url(#glowPointTop)"/>
+            <circle cx="432" cy="55" r="6" fill="url(#glowPointTop)"/>
+            <circle cx="685" cy="68" r="6" fill="url(#glowPointTop)"/>
+            <circle cx="915" cy="46" r="6" fill="url(#glowPointTop)"/>
+        </g>
+        <g filter="url(#shardShadowTop)">
+            <g fill="url(#shardSilverTop)">
+                <polygon points="205,58 220,62 216,48 202,46"/>
+                <polygon points="435,55 450,60 445,45 432,42"/>
+                <polygon points="688,68 703,74 698,58 684,54"/>
+                <polygon points="918,46 932,52 928,37 914,33"/>
+                <polygon points="162,30 176,36 172,22 158,18"/>
+                <polygon points="495,62 509,68 505,53 491,49"/>
+                <polygon points="345,12 358,18 354,4 340,2"/>
+                <polygon points="802,30 816,36 812,22 798,18"/>
+                <polygon points="1055,36 1069,42 1065,27 1051,23"/>
+            </g>
+        </g>
+    </svg>
+
+    <svg class="lycoris h1" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris h2 small" viewBox="0 0 100 100"><use href="#lycoris-mini"/></svg>
+    <svg class="lycoris h3" viewBox="0 0 100 100"><use href="#lycoris-real"/></svg>
+    <svg class="lycoris h4 small" viewBox="0 0 100 100"><use href="#lycoris-mini"/></svg>
+</div>
+
+<!-- LIANES -->
+<div class="vine left">
+    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
+            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
+            <path d="M35,80 Q50,95 58,120"/>
+            <path d="M20,160 Q5,180 8,210"/>
+            <path d="M30,320 Q48,340 52,370"/>
+            <path d="M22,480 Q5,500 10,530"/>
+            <path d="M32,640 Q50,660 55,690"/>
+            <path d="M20,800 Q8,820 12,850"/>
+        </g>
+        <g fill="#4a4258" fill-opacity="0.85">
+            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)"/>
+            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)"/>
+            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)"/>
+            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)"/>
+            <ellipse cx="55" cy="690" rx="3.5" ry="7" transform="rotate(35 55 690)"/>
+            <ellipse cx="12" cy="850" rx="3.5" ry="7" transform="rotate(-40 12 850)"/>
+        </g>
+    </svg>
+</div>
+<div class="vine right">
+    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
+            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
+            <path d="M35,80 Q50,95 58,120"/>
+            <path d="M20,160 Q5,180 8,210"/>
+            <path d="M30,320 Q48,340 52,370"/>
+            <path d="M22,480 Q5,500 10,530"/>
+            <path d="M32,640 Q50,660 55,690"/>
+            <path d="M20,800 Q8,820 12,850"/>
+        </g>
+        <g fill="#4a4258" fill-opacity="0.85">
+            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)"/>
+            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)"/>
+            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)"/>
+            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)"/>
+            <ellipse cx="55" cy="690" rx="3.5" ry="7" transform="rotate(35 55 690)"/>
+            <ellipse cx="12" cy="850" rx="3.5" ry="7" transform="rotate(-40 12 850)"/>
+        </g>
+    </svg>
+</div>
+
+<!-- CONTENU -->
+<main>
+    <h1>Administration</h1>
+    <div class="divider"></div>
+
+    <!-- Formulaire de connexion -->
+    <div id="login-bloc">
+        <form id="login-form">
+            <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" required autocomplete="email">
+            </div>
+            <div>
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            <button type="submit" id="login-btn">Se connecter</button>
+        </form>
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- Affiché quand déjà connecté -->
+    <div class="connected" id="connected-bloc">
+        <p>Connecté en tant que <span class="email" id="user-email"></span></p>
+        <button id="logout-btn">Se déconnecter</button>
+        <br>
+        <a href="dashboard.html" class="dashboard-link">Aller au tableau de bord</a>
+    </div>
+</main>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/config.js"></script>
+<script src="data/api.js"></script>
+<script>
+    const loginBloc = document.getElementById("login-bloc");
+    const connectedBloc = document.getElementById("connected-bloc");
+    const emailSpan = document.getElementById("user-email");
+    const messageEl = document.getElementById("message");
+    const form = document.getElementById("login-form");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    function afficherMessage(texte, type) {
+        messageEl.textContent = texte;
+        messageEl.className = "message visible " + type;
+    }
+
+    function cacherMessage() {
+        messageEl.className = "message";
+    }
+
+    function afficherConnecte(user) {
+        loginBloc.style.display = "none";
+        connectedBloc.classList.add("visible");
+        emailSpan.textContent = user.email;
+    }
+
+    function afficherDeconnecte() {
+        loginBloc.style.display = "block";
+        connectedBloc.classList.remove("visible");
+        form.reset();
+    }
+
+    // Vérifie s'il y a déjà une session active
+    async function verifierSession() {
+        const { data } = await sb.auth.getSession();
+        if (data && data.session && data.session.user) {
+            afficherConnecte(data.session.user);
+        } else {
+            afficherDeconnecte();
+        }
+    }
+
+    // Connexion
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        cacherMessage();
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Connexion…";
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        const { data, error } = await sb.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Se connecter";
+
+        if (error) {
+            afficherMessage("Échec : " + error.message, "error");
+            return;
+        }
+
+        afficherMessage("Connexion réussie.", "success");
+        afficherConnecte(data.user);
+    });
+
+    // Déconnexion
+    logoutBtn.addEventListener("click", async function () {
+        await sb.auth.signOut();
+        afficherDeconnecte();
+        cacherMessage();
+    });
+
+    // Au chargement
+    verifierSession();
+</script>
+
+</body>
+</html>
