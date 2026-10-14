@@ -357,6 +357,41 @@
             font-style: italic;
         }
 
+        /* ---- Boutons ↑ / ↓ pour réordonner ---- */
+        .ordre-btns {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .ordre-btn {
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 3px;
+            color: var(--silver);
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .ordre-btn:hover:not(:disabled) {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+        }
+
+        .ordre-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+
         /* ---- Messages ---- */
         .message {
             padding: 14px 18px;
@@ -807,6 +842,15 @@
         return bloc;
     }
 
+    // Retourne la liste des arcs du même contexte (même boîte, ou sans boîte)
+    // afin de gérer le réordonnancement à l'intérieur de ce groupe.
+    function obtenirArcsDuContexte(arc) {
+        if (arc.boite_id) {
+            return tousLesArcs.filter(a => a.boite_id === arc.boite_id);
+        }
+        return tousLesArcs.filter(a => !a.boite_id);
+    }
+
     function construireBlocSansBoite(arcs) {
         const bloc = document.createElement("div");
         bloc.className = "boite";
@@ -857,6 +901,48 @@
 
         const header = document.createElement("div");
         header.className = "arc-header";
+
+        // Boutons de réordonnancement
+        const ordreBtns = document.createElement("div");
+        ordreBtns.className = "ordre-btns";
+
+        const arcsDuContexte = obtenirArcsDuContexte(arc);
+        const indexArc = arcsDuContexte.findIndex(a => a.id === arc.id);
+        const arcPrec = indexArc > 0 ? arcsDuContexte[indexArc - 1] : null;
+        const arcSuiv = indexArc >= 0 && indexArc < arcsDuContexte.length - 1
+            ? arcsDuContexte[indexArc + 1] : null;
+
+        const btnUp = document.createElement("button");
+        btnUp.className = "ordre-btn";
+        btnUp.textContent = "↑";
+        btnUp.title = "Monter cet arc";
+        btnUp.disabled = !arcPrec;
+        btnUp.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            if (!arcPrec) return;
+            try {
+                await echangerOrdreArcs(arc, arcPrec);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        ordreBtns.appendChild(btnUp);
+
+        const btnDown = document.createElement("button");
+        btnDown.className = "ordre-btn";
+        btnDown.textContent = "↓";
+        btnDown.title = "Descendre cet arc";
+        btnDown.disabled = !arcSuiv;
+        btnDown.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            if (!arcSuiv) return;
+            try {
+                await echangerOrdreArcs(arc, arcSuiv);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        ordreBtns.appendChild(btnDown);
+
+        header.appendChild(ordreBtns);
 
         const toggle = document.createElement("span");
         toggle.className = "arc-toggle";
@@ -957,6 +1043,46 @@
     function construireLigneActe(acte) {
         const ligne = document.createElement("div");
         ligne.className = "acte-ligne";
+
+        // Boutons ↑ / ↓
+        const ordreBtns = document.createElement("div");
+        ordreBtns.className = "ordre-btns";
+
+        const actesDeLArc = actesParArc[acte.arc_id] || [];
+        const indexActe = actesDeLArc.findIndex(a => a.id === acte.id);
+        const actePrec = indexActe > 0 ? actesDeLArc[indexActe - 1] : null;
+        const acteSuiv = indexActe >= 0 && indexActe < actesDeLArc.length - 1
+            ? actesDeLArc[indexActe + 1] : null;
+
+        const btnUp = document.createElement("button");
+        btnUp.className = "ordre-btn";
+        btnUp.textContent = "↑";
+        btnUp.title = "Monter cet acte";
+        btnUp.disabled = !actePrec;
+        btnUp.addEventListener("click", async function () {
+            if (!actePrec) return;
+            try {
+                await echangerNumeroActes(acte, actePrec);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        ordreBtns.appendChild(btnUp);
+
+        const btnDown = document.createElement("button");
+        btnDown.className = "ordre-btn";
+        btnDown.textContent = "↓";
+        btnDown.title = "Descendre cet acte";
+        btnDown.disabled = !acteSuiv;
+        btnDown.addEventListener("click", async function () {
+            if (!acteSuiv) return;
+            try {
+                await echangerNumeroActes(acte, acteSuiv);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        ordreBtns.appendChild(btnDown);
+
+        ligne.appendChild(ordreBtns);
 
         const num = document.createElement("div");
         num.className = "acte-num";

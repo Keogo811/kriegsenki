@@ -144,3 +144,58 @@ async function modifierArc(id, champs) {
     if (error) { console.error("Erreur modifierArc :", error); throw error; }
     return data;
 }
+
+
+// --- Réordonnancement ---
+
+async function echangerOrdreArcs(arcA, arcB) {
+    // Échange les "ordre" des deux arcs
+    const ordreA = arcA.ordre || 0;
+    const ordreB = arcB.ordre || 0;
+
+    // Si les deux ont le même ordre (cas par défaut = 0), on force des valeurs
+    let newA = ordreB;
+    let newB = ordreA;
+    if (newA === newB) {
+        // On donne à B l'ordre de A moins un pour qu'il passe devant
+        newA = ordreB - 1;
+        newB = ordreA + 1;
+    }
+
+    const { error: errA } = await sb
+        .from('arcs')
+        .update({ ordre: newA })
+        .eq('id', arcA.id);
+    if (errA) throw errA;
+
+    const { error: errB } = await sb
+        .from('arcs')
+        .update({ ordre: newB })
+        .eq('id', arcB.id);
+    if (errB) throw errB;
+}
+
+async function echangerNumeroActes(acteA, acteB) {
+    const numA = acteA.numero;
+    const numB = acteB.numero;
+
+    // Éviter un conflit temporaire de clé primaire si on avait une contrainte
+    // (pas le cas ici, mais on procède en deux temps par précaution)
+    const { error: errA } = await sb
+        .from('actes')
+        .update({ numero: -1 })
+        .eq('id', acteA.id);
+    if (errA) throw errA;
+
+    const { error: errB } = await sb
+        .from('actes')
+        .update({ numero: numA })
+        .eq('id', acteB.id);
+    if (errB) throw errB;
+
+    const { error: errA2 } = await sb
+        .from('actes')
+        .update({ numero: numB })
+        .eq('id', acteA.id);
+    if (errA2) throw errA2;
+}
