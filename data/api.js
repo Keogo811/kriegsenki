@@ -121,3 +121,26 @@ async function changerBoiteArc(arcId, boiteId) {
         .eq('id', arcId);
     if (error) { console.error("Erreur changerBoiteArc :", error); throw error; }
 }
+
+
+async function modifierActe(id, champs) {
+    const { data, error } = await sb
+        .from('actes')
+        .update(champs)
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) { console.error("Erreur modifierActe :", error); throw error; }
+    return data;
+}
+
+async function modifierArc(id, champs) {
+    const { data, error } = await sb
+        .from('arcs')
+        .update(champs)
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) { console.error("Erreur modifierArc :", error); throw error; }
+    return data;
+}
