@@ -125,6 +125,27 @@
             border-bottom: 1px solid var(--border);
         }
 
+        .arc-header {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .arc-toggle {
+            font-size: 14px;
+            color: var(--silver);
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .arc-nb-actes {
+            font-size: 11px;
+            color: var(--text-soft);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: Consolas, monospace;
+        }
+
         .arc-header-titre {
             font-size: 17px;
             color: var(--heading);
@@ -275,14 +296,24 @@
         const bloc = document.createElement("div");
         bloc.className = "arc-bloc";
 
-        // En-tête de l'arc
+        // En-tête de l'arc (cliquable pour plier/déplier)
         const header = document.createElement("div");
         header.className = "arc-header";
+
+        const toggle = document.createElement("span");
+        toggle.className = "arc-toggle";
+        toggle.textContent = "▸";
+        header.appendChild(toggle);
 
         const titre = document.createElement("div");
         titre.className = "arc-header-titre";
         titre.textContent = arc.titre;
         header.appendChild(titre);
+
+        const nbActes = document.createElement("span");
+        nbActes.className = "arc-nb-actes";
+        nbActes.textContent = actes.length + (actes.length > 1 ? " actes" : " acte");
+        header.appendChild(nbActes);
 
         const idEl = document.createElement("div");
         idEl.className = "arc-header-id";
@@ -297,7 +328,8 @@
         const btnModifier = document.createElement("button");
         btnModifier.className = "btn small";
         btnModifier.textContent = "Modifier";
-        btnModifier.addEventListener("click", function () {
+        btnModifier.addEventListener("click", function (e) {
+            e.stopPropagation();
             alert("Édition d'arc : à venir à la prochaine étape.");
         });
         header.appendChild(btnModifier);
@@ -307,6 +339,7 @@
         // Liste des actes
         const liste = document.createElement("div");
         liste.className = "actes-liste";
+        liste.style.display = "none"; // fermé par défaut
 
         if (actes.length === 0) {
             const vide = document.createElement("div");
@@ -318,6 +351,13 @@
                 liste.appendChild(construireLigneActe(acte));
             });
         }
+
+        // Clic sur l'en-tête : plie / déplie
+        header.addEventListener("click", function () {
+            const ouvert = liste.style.display === "block";
+            liste.style.display = ouvert ? "none" : "block";
+            toggle.textContent = ouvert ? "▸" : "▾";
+        });
 
         bloc.appendChild(liste);
         return bloc;
