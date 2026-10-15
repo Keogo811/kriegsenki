@@ -131,6 +131,92 @@
             margin-bottom: 46px;
         }
 
+        /* ---- Bouton "Vue Univers" ---- */
+        .univers-cta {
+            text-align: center;
+            margin: -14px 0 50px;
+        }
+
+        .univers-btn {
+            display: inline-block;
+            padding: 20px 46px;
+            background: linear-gradient(180deg, rgba(36, 29, 46, 0.85) 0%, rgba(28, 22, 36, 0.85) 100%);
+            border: 1px solid var(--silver-soft);
+            border-radius: 6px;
+            color: var(--text);
+            text-decoration: none;
+            position: relative;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            box-shadow:
+                0 0 0 1px rgba(140, 26, 40, 0.08),
+                0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .univers-btn::before {
+            content: "";
+            position: absolute;
+            inset: 6px;
+            border: 1px solid rgba(168, 168, 184, 0.12);
+            border-radius: 4px;
+            pointer-events: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .univers-btn:hover {
+            border-color: var(--red-bright);
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 0 1px rgba(176, 24, 40, 0.3),
+                0 12px 32px rgba(0, 0, 0, 0.5),
+                0 0 24px rgba(176, 24, 40, 0.15);
+        }
+
+        .univers-btn:hover::before {
+            border-color: rgba(176, 24, 40, 0.3);
+        }
+
+        .univers-btn-label {
+            display: block;
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--red-bright);
+            margin-bottom: 6px;
+            transition: color 0.3s ease;
+        }
+
+        .univers-btn:hover .univers-btn-label {
+            color: var(--red-bright);
+            text-shadow: 0 0 8px rgba(176, 24, 40, 0.6);
+        }
+
+        .univers-btn-titre {
+            display: block;
+            font-size: 22px;
+            letter-spacing: 2px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            text-shadow: 0 0 14px rgba(200, 200, 220, 0.35);
+        }
+
+        .univers-btn-sous {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: var(--text-soft);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 800px) {
+            .univers-btn {
+                padding: 16px 30px;
+                width: 100%;
+                max-width: 320px;
+            }
+            .univers-btn-titre { font-size: 18px; }
+        }
+
         .divider {
             width: 120px;
             height: 1px;
@@ -465,12 +551,14 @@
 
     <h2 class="section-title">Mes Arcs</h2>
 
-    <p style="text-align:center; margin: -20px 0 40px;">
-        <a href="univers.html" style="color: var(--silver); text-decoration: none; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px solid transparent; transition: color .2s ease, border-bottom-color .2s ease;" onmouseover="this.style.color='var(--red-bright)';this.style.borderBottomColor='var(--red-bright)'" onmouseout="this.style.color='var(--silver)';this.style.borderBottomColor='transparent'">
-            Voir la vue Univers
+    <div class="univers-cta">
+        <a href="univers.html" class="univers-btn">
+            <span class="univers-btn-label">Explorer</span>
+            <span class="univers-btn-titre">La Vue Univers</span>
+            <span class="univers-btn-sous">Frise et liens entre les arcs</span>
         </a>
-    </p>
-    
+    </div>
+
     <!-- Les cartes sont générées automatiquement depuis Supabase -->
     <div class="arcs" id="arcs-container">
         <p class="loading">Chargement des arcs…</p>
