@@ -676,11 +676,11 @@
             const duree = 12 + Math.random() * 20;
             svg.style.animationDuration = duree + 's';
             svg.style.animationDelay = -(Math.random() * duree) + 's';
+            const estAlice = Math.random() < 0.35;
             const opacite = 0.3 + Math.random() * 0.4;
-            const estClair = Math.random() < 0.5;
-            const couleur = estClair
-                ? 'rgba(216, 216, 228, ' + opacite + ')'
-                : 'rgba(168, 168, 184, ' + opacite + ')';
+            const couleur = estAlice
+                ? 'rgba(160, 184, 208, ' + opacite + ')'
+                : 'rgba(216, 216, 228, ' + opacite + ')';
             const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
             poly.setAttribute('points', '50,4 86,30 70,88 22,76 12,28');
             poly.setAttribute('fill', couleur);
