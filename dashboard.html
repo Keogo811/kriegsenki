@@ -749,7 +749,7 @@
             // Charger les actes pour chaque arc (en série pour simplicité)
             actesParArc = {};
             for (const arc of tousLesArcs) {
-                actesParArc[arc.id] = await chargerActesParArc(arc.id);
+            actesParArc[arc.id] = await chargerActesParArcTous(arc.id);
             }
 
             afficherTout();

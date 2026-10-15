@@ -7,9 +7,11 @@
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function chargerArcs() {
+    // Public : on exclut les brouillons
     const { data, error } = await sb
         .from('arcs')
         .select('*')
+        .neq('statut', 'brouillon')
         .order('ordre', { ascending: true })
         .order('created_at', { ascending: true });
     if (error) {
@@ -33,13 +35,29 @@ async function chargerArc(id) {
 }
 
 async function chargerActesParArc(arcId) {
+    // Public : on exclut les brouillons
+    const { data, error } = await sb
+        .from('actes')
+        .select('*')
+        .eq('arc_id', arcId)
+        .neq('statut', 'brouillon')
+        .order('numero', { ascending: true });
+    if (error) {
+        console.error("Erreur chargerActesParArc :", error);
+        throw error;
+    }
+    return data;
+}
+
+// Version admin, sans filtre (utilisée par le dashboard)
+async function chargerActesParArcTous(arcId) {
     const { data, error } = await sb
         .from('actes')
         .select('*')
         .eq('arc_id', arcId)
         .order('numero', { ascending: true });
     if (error) {
-        console.error("Erreur chargerActesParArc :", error);
+        console.error("Erreur chargerActesParArcTous :", error);
         throw error;
     }
     return data;
