@@ -263,6 +263,15 @@
             pointer-events: none;
         }
 
+        .tag-link {
+            fill: none;
+            stroke: rgba(216, 160, 176, 0.75);
+            stroke-width: 1;
+            stroke-dasharray: 4 5;
+            opacity: 0.85;
+            pointer-events: none;
+        }
+
         .link {
             fill: none;
             stroke: rgba(168, 168, 184, 0.55);
@@ -638,6 +647,7 @@
                 <circle cx="50" cy="50" r="2" fill="#e8e0d4"/>
             </g>
         </defs>
+        <g id="tag-links"></g>
         <g id="tree-group"></g>
     </svg>
     <div class="info-vide" id="info-vide" style="display:none;"></div>
@@ -797,8 +807,10 @@
     let contentBounds = null;
 
     function appliquerTransform() {
-        group.setAttribute("transform",
-            "translate(" + panX + "," + panY + ") scale(" + zoom + ")");
+        const t = "translate(" + panX + "," + panY + ") scale(" + zoom + ")";
+        group.setAttribute("transform", t);
+        const tagGroup = document.getElementById("tag-links");
+        if (tagGroup) tagGroup.setAttribute("transform", t);
     }
 
     function dessinerArbre(arcs) {
@@ -810,6 +822,7 @@
         }
         infoVide.style.display = "none";
         const data = layout(arcs);
+        window.__arcs = arcs;
 
         arcs.forEach(arc => {
             if (arc.parent_id && data.byId[arc.parent_id]) {
@@ -908,11 +921,68 @@
             g.appendChild(lieu);
         }
 
+        // Survol : affiche les liens de tag
+        g.addEventListener("mouseenter", function () {
+            dessinerLiensTag(arc);
+        });
+        g.addEventListener("mouseleave", function () {
+            effacerLiensTag();
+        });
+
         g.addEventListener("click", function (e) {
             e.stopPropagation();
             window.location.href = "arc.html#" + arc.id;
         });
         return g;
+    }
+
+    // ---- Liens par tags ----
+
+    const tagLinksGroup = document.getElementById("tag-links");
+
+    function normaliserTag(t) {
+        return (t || "").toString().toLowerCase().trim();
+    }
+
+    function tagsDeArc(arc) {
+        const raw = arc.tags || [];
+        if (!Array.isArray(raw)) return [];
+        return raw.map(normaliserTag).filter(function (t) { return t.length > 0; });
+    }
+
+    function effacerLiensTag() {
+        tagLinksGroup.innerHTML = "";
+    }
+
+    function dessinerLiensTag(arcCible) {
+        effacerLiensTag();
+        const tagsCible = tagsDeArc(arcCible);
+        if (tagsCible.length === 0) return;
+
+        const tous = window.__arcs || [];
+        tous.forEach(function (autre) {
+            if (autre.id === arcCible.id) return;
+            const tagsAutre = tagsDeArc(autre);
+            const commun = tagsCible.some(function (t) {
+                return tagsAutre.indexOf(t) !== -1;
+            });
+            if (!commun) return;
+
+            const x1 = arcCible._x;
+            const y1 = arcCible._y;
+            const x2 = autre._x;
+            const y2 = autre._y;
+            const mx = (x1 + x2) / 2;
+            const my = (y1 + y2) / 2 - 30;
+
+            const ligne = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            ligne.setAttribute("class", "tag-link");
+            ligne.setAttribute("d",
+                "M" + x1 + "," + y1 +
+                " Q" + mx + "," + my +
+                " " + x2 + "," + y2);
+            tagLinksGroup.appendChild(ligne);
+        });
     }
 
     function recentrer() {
