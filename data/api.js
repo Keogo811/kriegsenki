@@ -278,3 +278,14 @@ async function prochainNumeroActe(arcId) {
     if (!data || data.length === 0) return 1;
     return (data[0].numero || 0) + 1;
 }
+
+async function chargerArcsPourArbre() {
+    const { data, error } = await sb
+        .from('arcs')
+        .select('id, titre, parent_id, statut, ordre, date_univers, lieu, themes, tags')
+        .neq('statut', 'brouillon')
+        .order('ordre', { ascending: true })
+        .order('created_at', { ascending: true });
+    if (error) { console.error("Erreur chargerArcsPourArbre :", error); throw error; }
+    return data;
+}

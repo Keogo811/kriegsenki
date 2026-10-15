@@ -6,13 +6,14 @@
     <title>Univers — Krieg Senki</title>
     <style>
         :root {
-            --bg: #17131d;
+            --bg: #0f0c14;
+            --void: #060410;
             --card-bg: #1c1624;
-            --card-hover: #241d2e;
             --text: #cdc2b8;
             --text-soft: #8a8088;
             --heading: #c8bcb4;
             --silver: #a8a8b8;
+            --silver-bright: #d8d8e4;
             --silver-soft: #807f8c;
             --red: #8c1a28;
             --red-bright: #b01828;
@@ -22,487 +23,735 @@
         }
 
         * { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; }
+        html, body { margin: 0; padding: 0; height: 100%; }
 
         body {
             background: var(--bg);
             color: var(--text);
             font-family: Georgia, 'Times New Roman', serif;
-            font-size: 17px;
-            line-height: 1.7;
+            font-size: 16px;
             min-height: 100vh;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---- Fond : miroir brisé avec grand vide ---- */
+        .mirror-top, .mirror-bottom {
+            width: 100%;
+            position: fixed;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .mirror-top { top: 0; height: 200px; }
+        .mirror-bottom { bottom: 0; height: 180px; }
+
+        .mirror-top svg, .mirror-bottom svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ---- Barre du titre ---- */
+        .titre-barre {
             position: relative;
-        }
-
-        /* Éclats qui tombent */
-        .shards-bg {
-            position: fixed; inset: 0; overflow: hidden;
-            pointer-events: none; z-index: 1;
-        }
-        .shard {
-            position: absolute; top: -120px;
-            will-change: transform, opacity;
-            animation-name: chute;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-        @keyframes chute {
-            0%   { transform: translateY(-120px) rotate(0deg);  opacity: 0; }
-            10%  { opacity: 1; }
-            90%  { opacity: 1; }
-            100% { transform: translateY(115vh) rotate(540deg); opacity: 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .shard { animation: none; display: none; }
-        }
-
-        /* Lianes */
-        .vine {
-            position: fixed; top: 0; bottom: 0; width: 70px;
-            pointer-events: none; z-index: 1; opacity: 0.55;
-        }
-        .vine.left { left: 0; }
-        .vine.right { right: 0; transform: scaleX(-1); }
-        .vine svg { width: 100%; height: 100%; }
-
-        /* Contenu */
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 30px 110px;
-            position: relative;
-            z-index: 4;
-        }
-
-        h1 {
-            font-family: Georgia, serif;
-            font-size: 34px;
-            font-weight: normal;
-            letter-spacing: 2px;
-            color: var(--heading);
+            z-index: 10;
             text-align: center;
-            margin: 0 0 12px;
+            padding: 22px 20px 10px;
+        }
+        .titre-barre h1 {
+            font-family: Georgia, serif;
+            font-size: 26px;
+            font-weight: normal;
+            letter-spacing: 4px;
+            color: var(--heading);
+            margin: 0 0 4px;
             text-shadow:
                 0 0 18px rgba(200, 200, 220, 0.55),
                 0 0 40px rgba(176, 24, 40, 0.28);
         }
-
-        .subtitle {
-            text-align: center;
-            color: var(--text-soft);
-            font-style: italic;
-            font-size: 14px;
+        .titre-barre .soustitre {
+            font-size: 11px;
             letter-spacing: 5px;
             text-transform: uppercase;
-            margin-bottom: 46px;
+            color: var(--text-soft);
+            font-style: italic;
         }
 
-        .divider {
-            width: 120px;
-            height: 1px;
-            margin: 0 auto 60px;
-            background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
-        }
-
-        /* ---- Frise verticale ---- */
-        .frise {
+        /* ---- Zone de l'arbre (pan/zoom) ---- */
+        .canvas {
             position: relative;
-            padding: 30px 0 40px;
+            flex: 1;
+            margin: 10px 0 0;
+            overflow: hidden;
+            cursor: grab;
+            z-index: 5;
+            touch-action: none;
         }
+        .canvas.grabbing { cursor: grabbing; }
 
-        /* La ligne verticale centrale */
-        .frise-ligne {
+        #svg-tree {
             position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom,
-                transparent 0%,
-                var(--silver-soft) 6%,
-                var(--silver-soft) 94%,
-                transparent 100%);
-            transform: translateX(-1px);
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            user-select: none;
         }
 
-        /* Chaque nœud de la frise */
-        .frise-noeud {
-            position: relative;
+        /* ---- Contrôles ---- */
+        .controls {
+            position: fixed;
+            bottom: 200px;
+            right: 20px;
             display: flex;
-            align-items: center;
-            margin-bottom: 40px;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 60;
         }
+        .controls button {
+            width: 42px; height: 42px;
+            background: rgba(28, 22, 36, 0.92);
+            border: 1px solid var(--silver-soft);
+            border-radius: 4px;
+            color: var(--silver);
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+            backdrop-filter: blur(6px);
+        }
+        .controls button:hover {
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+            background: rgba(40, 30, 50, 0.95);
+        }
+        .controls button.petit { font-size: 13px; }
 
-        /* Alterne gauche / droite */
-        .frise-noeud:nth-child(odd) {
-            justify-content: flex-start;
-        }
-        .frise-noeud:nth-child(even) {
-            justify-content: flex-end;
-        }
-
-        /* Le point sur la ligne */
-        .frise-point {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            border: 2px solid var(--red);
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 12px rgba(176, 24, 40, 0.5);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 2;
-        }
-
-        .frise-noeud:hover .frise-point {
-            transform: translate(-50%, -50%) scale(1.3);
-            box-shadow: 0 0 20px rgba(176, 24, 40, 0.9);
-        }
-
-        /* La carte de l'arc */
-        .frise-carte {
-            width: 44%;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 18px 22px;
-            text-decoration: none;
-            color: var(--text);
-            transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+        /* ---- Pied ---- */
+        .pied {
             position: relative;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px 20px;
         }
-
-        .frise-carte:hover {
-            background: var(--card-hover);
-            border-color: var(--silver-soft);
-            transform: translateY(-2px);
-        }
-
-        .frise-carte.gauche { margin-right: auto; text-align: right; border-left: 3px solid var(--red); }
-        .frise-carte.droite { margin-left: auto; text-align: left; border-right: 3px solid var(--red); }
-
-        .frise-date {
+        .pied a {
+            color: var(--silver);
+            text-decoration: none;
             font-size: 12px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--red-bright);
-            margin-bottom: 6px;
+            transition: color 0.2s ease;
         }
+        .pied a:hover { color: var(--red-bright); }
 
-        .frise-titre {
-            font-size: 17px;
-            color: var(--heading);
-            font-weight: normal;
-            margin: 0 0 8px;
-            letter-spacing: 1px;
-        }
-
-        .frise-lieu {
-            font-size: 13px;
-            color: var(--alice);
+        /* ---- Info vide ---- */
+        .info-vide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-soft);
             font-style: italic;
-            margin-bottom: 10px;
+            font-size: 15px;
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
         }
 
-        .frise-themes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 6px;
+        /* ---- Nœuds (SVG) ---- */
+        .node {
+            cursor: pointer;
         }
-        .frise-carte.gauche .frise-themes { justify-content: flex-end; }
-
-        .frise-theme {
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 999px;
-            background: rgba(140, 26, 40, 0.15);
-            color: #e0a8b0;
-            letter-spacing: 1px;
+        .node rect {
+            fill: var(--card-bg);
+            stroke: rgba(168, 168, 184, 0.35);
+            stroke-width: 1;
+            rx: 6;
+            transition: fill 0.2s ease, stroke 0.2s ease;
         }
-
-        .frise-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
+        .node:hover rect {
+            fill: #241d2e;
+            stroke: var(--red-bright);
         }
-        .frise-carte.gauche .frise-tags { justify-content: flex-end; }
-
-        .frise-tag {
+        .node text.titre {
+            fill: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        .node text.date {
+            fill: var(--red-bright);
+            font-family: Georgia, serif;
             font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            background: rgba(168, 168, 184, 0.08);
-            color: var(--text-soft);
-            letter-spacing: 1px;
-            font-family: Consolas, monospace;
-        }
-
-        /* État vide / chargement */
-        .info {
-            text-align: center;
-            color: var(--text-soft);
-            font-style: italic;
-            padding: 40px 20px;
-        }
-
-        /* Retour */
-        .retour {
-            display: block;
-            text-align: center;
-            margin-top: 60px;
-            color: var(--silver);
-            text-decoration: none;
-            font-size: 13px;
             letter-spacing: 2px;
             text-transform: uppercase;
         }
-        .retour:hover { color: var(--red-bright); }
-
-        /* Bouton retour en haut */
-        #backToTop {
-            position: fixed;
-            bottom: 26px; right: 26px;
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            background: rgba(30, 24, 38, 0.9);
-            border: 1px solid var(--silver-soft);
-            color: var(--silver);
-            font-size: 20px;
-            line-height: 1;
-            cursor: pointer;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease, border-color 0.25s ease, color 0.25s ease;
-            z-index: 100;
+        .node text.lieu {
+            fill: var(--alice);
+            font-family: Georgia, serif;
+            font-size: 10px;
+            font-style: italic;
         }
-        #backToTop.visible { opacity: 1; pointer-events: auto; }
-        #backToTop:hover { border-color: var(--red-bright); color: var(--red-bright); }
+
+        .link {
+            fill: none;
+            stroke: rgba(168, 168, 184, 0.45);
+            stroke-width: 1.2;
+        }
 
         /* ---- Mobile ---- */
         @media (max-width: 800px) {
-            body { font-size: 15px; }
-            h1 { font-size: 27px; }
-            .subtitle { font-size: 12px; letter-spacing: 3px; }
-            main { padding: 30px 16px 90px; }
-            .vine { display: none; }
-
-            /* Sur mobile : la frise passe à gauche, tout du même côté */
-            .frise-ligne { left: 20px; }
-            .frise-noeud {
-                justify-content: flex-start !important;
-                padding-left: 50px;
-            }
-            .frise-point { left: 20px; }
-            .frise-carte {
-                width: 100%;
-                text-align: left !important;
-                border-left: 3px solid var(--red) !important;
-                border-right: none !important;
-                margin: 0 !important;
-            }
-            .frise-carte .frise-themes,
-            .frise-carte .frise-tags { justify-content: flex-start !important; }
-
-            #backToTop { width: 46px; height: 46px; bottom: 18px; right: 18px; }
+            .mirror-top { height: 130px; }
+            .mirror-bottom { height: 120px; }
+            .titre-barre { padding: 16px 14px 6px; }
+            .titre-barre h1 { font-size: 22px; letter-spacing: 3px; }
+            .controls { bottom: 140px; right: 12px; }
+            .controls button { width: 38px; height: 38px; font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Éclats -->
-<div class="shards-bg" id="shards-bg" aria-hidden="true"></div>
+<!-- ============================================================
+     FOND : MIROIR BRISÉ HAUT (grand vide, brèche qui s'étend)
+     ============================================================ -->
+<div class="mirror-top">
+    <svg viewBox="0 0 1200 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="voidTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#040308"/>
+                <stop offset="55%" stop-color="#08060e"/>
+                <stop offset="100%" stop-color="#0f0c14"/>
+            </linearGradient>
+            <radialGradient id="glowTop" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#e8e8f4" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="shardTop" x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#a8a8b8" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="crackTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d8d8e4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#d8d8e4" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
 
-<!-- Lianes latérales -->
-<div class="vine left">
-    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
-            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
-            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+        <!-- Le grand vide : couvre presque la moitié de la zone -->
+        <path fill="url(#voidTop)" d="
+            M0,0 L1200,0
+            L1200,72 L1165,95 L1130,68 L1095,102 L1060,80 L1020,118 L985,88
+            L950,115 L915,82 L880,105 L845,72 L810,110 L775,84 L740,122 L705,90
+            L670,118 L635,85 L600,105 L565,72 L530,118 L495,88 L460,110 L425,78
+            L390,122 L355,88 L320,112 L285,80 L250,105 L215,72 L180,118 L145,85
+            L110,110 L75,78 L40,108 L0,80
+            Z
+        "/>
+
+        <!-- Liseré intérieur sombre -->
+        <path fill="none" stroke="#020106" stroke-width="2" opacity="0.9" d="
+            M0,3 L1195,3
+            L1195,74 L1162,97 L1128,70 L1093,104 L1058,82 L1018,120 L983,90
+            L948,117 L913,84 L878,107 L843,74 L808,112 L773,86 L738,124 L703,92
+            L668,120 L633,87 L598,107 L563,74 L528,120 L493,90 L458,112 L423,80
+            L388,124 L353,90 L318,114 L283,82 L248,107 L213,74 L178,120 L143,87
+            L108,112 L73,80 L38,110 L0,82
+        "/>
+
+        <!-- Arête argentée brillante du vide -->
+        <path fill="none" stroke="#e8e8f4" stroke-width="1.4" stroke-linejoin="miter" opacity="0.85" d="
+            M0,0 L1200,0
+            L1200,72 L1165,95 L1130,68 L1095,102 L1060,80 L1020,118 L985,88
+            L950,115 L915,82 L880,105 L845,72 L810,110 L775,84 L740,122 L705,90
+            L670,118 L635,85 L600,105 L565,72 L530,118 L495,88 L460,110 L425,78
+            L390,122 L355,88 L320,112 L285,80 L250,105 L215,72 L180,118 L145,85
+            L110,110 L75,78 L40,108 L0,80
+        "/>
+
+        <!-- Fissures qui descendent du vide vers le bas de l'écran -->
+        <g stroke="url(#crackTop)" stroke-width="1" fill="none" stroke-linejoin="miter" stroke-linecap="round">
+            <path d="M120,80 L105,120 L122,155 L110,190"/>
+            <path d="M285,80 L272,115 L288,148 L278,180"/>
+            <path d="M425,78 L412,118 L430,152 L418,188"/>
+            <path d="M565,72 L552,112 L570,148 L560,185"/>
+            <path d="M705,90 L692,125 L708,158"/>
+            <path d="M845,72 L832,110 L848,148 L838,182"/>
+            <path d="M985,88 L972,125 L990,158"/>
+            <path d="M1130,68 L1118,110 L1135,148 L1125,182"/>
+        </g>
+
+        <!-- Fissures plus fines -->
+        <g stroke="#c8c8d8" stroke-width="0.5" fill="none" opacity="0.5" stroke-linecap="round">
+            <path d="M105,120 L88,112 M105,120 L112,132"/>
+            <path d="M272,115 L256,108 M272,115 L280,126"/>
+            <path d="M412,118 L396,110 M412,118 L420,130"/>
+            <path d="M552,112 L536,105 M552,112 L560,124"/>
+            <path d="M832,110 L816,102 M832,110 L840,122"/>
+            <path d="M1118,110 L1102,102 M1118,110 L1126,122"/>
+        </g>
+
+        <!-- Lueurs ponctuelles -->
+        <g>
+            <circle cx="120" cy="80" r="6" fill="url(#glowTop)"/>
+            <circle cx="285" cy="80" r="6" fill="url(#glowTop)"/>
+            <circle cx="425" cy="78" r="6" fill="url(#glowTop)"/>
+            <circle cx="565" cy="72" r="6" fill="url(#glowTop)"/>
+            <circle cx="705" cy="90" r="6" fill="url(#glowTop)"/>
+            <circle cx="845" cy="72" r="6" fill="url(#glowTop)"/>
+            <circle cx="985" cy="88" r="6" fill="url(#glowTop)"/>
+            <circle cx="1130" cy="68" r="6" fill="url(#glowTop)"/>
+        </g>
+
+        <!-- Éclats -->
+        <g fill="url(#shardTop)">
+            <polygon points="120,80 138,86 134,68 116,66"/>
+            <polygon points="285,80 302,86 298,68 282,66"/>
+            <polygon points="425,78 442,84 438,66 422,64"/>
+            <polygon points="565,72 582,78 578,60 562,58"/>
+            <polygon points="705,90 722,96 718,78 702,76"/>
+            <polygon points="845,72 862,78 858,60 842,58"/>
+            <polygon points="985,88 1002,94 998,76 982,74"/>
+            <polygon points="1130,68 1147,74 1143,56 1127,54"/>
         </g>
     </svg>
 </div>
-<div class="vine right">
-    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
-            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
-            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
-            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+
+<!-- ============================================================
+     FOND : MIROIR BRISÉ BAS (miroir du haut)
+     ============================================================ -->
+<div class="mirror-bottom">
+    <svg viewBox="0 0 1200 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="voidBot" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#040308"/>
+                <stop offset="55%" stop-color="#08060e"/>
+                <stop offset="100%" stop-color="#0f0c14"/>
+            </linearGradient>
+            <radialGradient id="glowBot" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#e8e8f4" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="shardBot" x1="0" y1="1" x2="0.6" y2="0">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#a8a8b8" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="crackBot" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#d8d8e4" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#d8d8e4" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+
+        <path fill="url(#voidBot)" d="
+            M0,180 L1200,180
+            L1200,108 L1165,85 L1130,112 L1095,78 L1060,100 L1020,62 L985,92
+            L950,65 L915,98 L880,75 L845,108 L810,70 L775,96 L740,58 L705,90
+            L670,62 L635,95 L600,75 L565,108 L530,62 L495,92 L460,70 L425,102
+            L390,58 L355,92 L320,68 L285,100 L250,75 L215,108 L180,62 L145,95
+            L110,70 L75,102 L40,72 L0,100
+            Z
+        "/>
+
+        <path fill="none" stroke="#020106" stroke-width="2" opacity="0.9" d="
+            M0,177 L1195,177
+            L1195,106 L1162,83 L1128,110 L1093,76 L1058,98 L1018,60 L983,90
+            L948,63 L913,96 L878,73 L843,106 L808,68 L773,94 L738,56 L703,88
+            L668,60 L633,93 L598,73 L563,106 L528,60 L493,90 L458,68 L423,100
+            L388,56 L353,90 L318,66 L283,98 L248,73 L213,106 L178,60 L143,93
+            L108,68 L73,100 L38,70 L0,98
+        "/>
+
+        <path fill="none" stroke="#e8e8f4" stroke-width="1.4" stroke-linejoin="miter" opacity="0.85" d="
+            M0,180 L1200,180
+            L1200,108 L1165,85 L1130,112 L1095,78 L1060,100 L1020,62 L985,92
+            L950,65 L915,98 L880,75 L845,108 L810,70 L775,96 L740,58 L705,90
+            L670,62 L635,95 L600,75 L565,108 L530,62 L495,92 L460,70 L425,102
+            L390,58 L355,92 L320,68 L285,100 L250,75 L215,108 L180,62 L145,95
+            L110,70 L75,102 L40,72 L0,100
+        "/>
+
+        <g stroke="url(#crackBot)" stroke-width="1" fill="none" stroke-linejoin="miter" stroke-linecap="round">
+            <path d="M120,100 L105,60 L122,25 L110,0"/>
+            <path d="M285,100 L272,65 L288,32 L278,0"/>
+            <path d="M425,102 L412,62 L430,28 L418,0"/>
+            <path d="M565,108 L552,68 L570,32 L560,0"/>
+            <path d="M705,90 L692,55 L708,22"/>
+            <path d="M845,108 L832,70 L848,32 L838,0"/>
+            <path d="M985,92 L972,55 L990,22"/>
+            <path d="M1130,112 L1118,70 L1135,32 L1125,0"/>
+        </g>
+
+        <g stroke="#c8c8d8" stroke-width="0.5" fill="none" opacity="0.5" stroke-linecap="round">
+            <path d="M105,60 L88,68 M105,60 L112,48"/>
+            <path d="M272,65 L256,72 M272,65 L280,54"/>
+            <path d="M412,62 L396,70 M412,62 L420,50"/>
+            <path d="M552,68 L536,75 M552,68 L560,56"/>
+            <path d="M832,70 L816,78 M832,70 L840,58"/>
+            <path d="M1118,70 L1102,78 M1118,70 L1126,58"/>
+        </g>
+
+        <g>
+            <circle cx="120" cy="100" r="6" fill="url(#glowBot)"/>
+            <circle cx="285" cy="100" r="6" fill="url(#glowBot)"/>
+            <circle cx="425" cy="102" r="6" fill="url(#glowBot)"/>
+            <circle cx="565" cy="108" r="6" fill="url(#glowBot)"/>
+            <circle cx="705" cy="90" r="6" fill="url(#glowBot)"/>
+            <circle cx="845" cy="108" r="6" fill="url(#glowBot)"/>
+            <circle cx="985" cy="92" r="6" fill="url(#glowBot)"/>
+            <circle cx="1130" cy="112" r="6" fill="url(#glowBot)"/>
+        </g>
+
+        <g fill="url(#shardBot)">
+            <polygon points="120,100 138,106 134,88 116,86"/>
+            <polygon points="285,100 302,106 298,88 282,86"/>
+            <polygon points="425,102 442,108 438,90 422,88"/>
+            <polygon points="565,108 582,114 578,96 562,94"/>
+            <polygon points="705,90 722,96 718,78 702,76"/>
+            <polygon points="845,108 862,114 858,96 842,94"/>
+            <polygon points="985,92 1002,98 998,80 982,78"/>
+            <polygon points="1130,112 1147,118 1143,100 1127,98"/>
         </g>
     </svg>
 </div>
 
-<!-- CONTENU -->
-<main>
+<!-- ============================================================
+     CONTENU
+     ============================================================ -->
+<div class="titre-barre">
     <h1>Univers</h1>
-    <p class="subtitle">Krieg Senki</p>
-    <div class="divider"></div>
+    <div class="soustitre">Krieg Senki</div>
+</div>
 
-    <div id="frise-container">
-        <p class="info">Chargement…</p>
-    </div>
+<div class="canvas" id="canvas">
+    <svg id="svg-tree" xmlns="http://www.w3.org/2000/svg">
+        <g id="tree-group"></g>
+    </svg>
+    <div class="info-vide" id="info-vide" style="display:none;"></div>
+</div>
 
-    <a href="index.html" class="retour">← Retour aux arcs</a>
-</main>
+<div class="controls">
+    <button id="btn-in" title="Zoom avant">+</button>
+    <button id="btn-out" title="Zoom arrière">−</button>
+    <button id="btn-reset" class="petit" title="Recentrer">⌂</button>
+</div>
 
-<!-- BOUTON RETOUR EN HAUT -->
-<button id="backToTop" aria-label="Retour en haut">↑</button>
+<div class="pied">
+    <a href="index.html">← Retour aux arcs</a>
+</div>
 
-<!-- SCRIPTS -->
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/config.js"></script>
 <script src="data/api.js"></script>
 <script>
-    // ---- Éclats ----
-    (function creerEclats() {
-        const conteneur = document.getElementById('shards-bg');
-        if (!conteneur) return;
-        const estMobile = window.innerWidth < 800;
-        const nb = estMobile ? 6 : 16;
-        for (let i = 0; i < nb; i++) {
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('viewBox', '0 0 100 100');
-            svg.classList.add('shard');
-            const taille = 12 + Math.random() * 22;
-            svg.style.width = taille + 'px';
-            svg.style.height = taille + 'px';
-            svg.style.left = Math.random() * 100 + 'vw';
-            const duree = 14 + Math.random() * 18;
-            svg.style.animationDuration = duree + 's';
-            svg.style.animationDelay = -(Math.random() * duree) + 's';
-            const estAlice = Math.random() < 0.25;
-            const opacite = 0.35 + Math.random() * 0.45;
-            const couleur = estAlice
-                ? 'rgba(160, 184, 208, ' + opacite + ')'
-                : 'rgba(216, 216, 228, ' + opacite + ')';
-            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            poly.setAttribute('points', '50,4 86,30 70,88 22,76 12,28');
-            poly.setAttribute('fill', couleur);
-            poly.setAttribute('stroke', 'rgba(232, 232, 244, 0.7)');
-            poly.setAttribute('stroke-width', '0.6');
-            svg.appendChild(poly);
-            conteneur.appendChild(svg);
-        }
-    })();
+    // ============================================================
+    // LAYOUT DE L'ARBRE
+    // ============================================================
+    const NODE_W = 240;
+    const NODE_H = 78;
+    const X_GAP = 320;
+    const Y_GAP = 120;
+    const ROOT_GAP = 60;
 
-    // ---- Frise ----
-    const friseContainer = document.getElementById('frise-container');
+    function layout(arcs) {
+        const byId = {};
+        arcs.forEach(a => byId[a.id] = a);
 
-    async function afficherFrise() {
-        try {
-            const arcs = await chargerArcs();
-            if (!arcs || arcs.length === 0) {
-                friseContainer.innerHTML = '<p class="info">Aucun arc à afficher pour l\'instant.</p>';
-                return;
+        const children = {};
+        arcs.forEach(a => children[a.id] = []);
+
+        const roots = [];
+        arcs.forEach(a => {
+            if (a.parent_id && byId[a.parent_id]) {
+                children[a.parent_id].push(a);
+            } else {
+                roots.push(a);
             }
+        });
 
-            friseContainer.innerHTML = "";
-            const frise = document.createElement("div");
-            frise.className = "frise";
-
-            const ligne = document.createElement("div");
-            ligne.className = "frise-ligne";
-            frise.appendChild(ligne);
-
-            arcs.forEach(function (arc, index) {
-                const cote = index % 2 === 0 ? "gauche" : "droite";
-                frise.appendChild(construireNoeud(arc, cote));
-            });
-
-            friseContainer.appendChild(frise);
-        } catch (err) {
-            console.error(err);
-            friseContainer.innerHTML = '<p class="info">Impossible de charger les arcs.</p>';
+        // Profondeur (x)
+        function setDepth(arc, d) {
+            arc._depth = d;
+            children[arc.id].forEach(c => setDepth(c, d + 1));
         }
+        roots.forEach(r => setDepth(r, 0));
+
+        // Y par post-ordre
+        let yCursor = 0;
+        function setY(arc) {
+            const kids = children[arc.id];
+            if (kids.length === 0) {
+                arc._y = yCursor;
+                yCursor += Y_GAP;
+            } else {
+                kids.forEach(setY);
+                arc._y = (kids[0]._y + kids[kids.length - 1]._y) / 2;
+            }
+        }
+        roots.forEach((r, i) => {
+            setY(r);
+            if (i < roots.length - 1) yCursor += ROOT_GAP;
+        });
+
+        // X
+        arcs.forEach(a => {
+            a._x = a._depth * X_GAP;
+        });
+
+        return { byId, children, roots };
     }
 
-    function construireNoeud(arc, cote) {
-        const noeud = document.createElement("div");
-        noeud.className = "frise-noeud";
+    // ============================================================
+    // RENDU
+    // ============================================================
+    const svg = document.getElementById("svg-tree");
+    const group = document.getElementById("tree-group");
+    const canvas = document.getElementById("canvas");
+    const infoVide = document.getElementById("info-vide");
 
-        const point = document.createElement("div");
-        point.className = "frise-point";
-        noeud.appendChild(point);
+    let panX = 0, panY = 0, zoom = 1;
+    let contentBounds = null;
 
-        const carte = document.createElement("a");
-        carte.className = "frise-carte " + cote;
-        carte.href = "arc.html#" + arc.id;
+    function appliquerTransform() {
+        group.setAttribute("transform",
+            "translate(" + panX + "," + panY + ") scale(" + zoom + ")");
+    }
+
+    function dessinerArbre(arcs) {
+        group.innerHTML = "";
+
+        if (!arcs || arcs.length === 0) {
+            infoVide.textContent = "Aucun arc à afficher pour l'instant.";
+            infoVide.style.display = "flex";
+            return;
+        }
+        infoVide.style.display = "none";
+
+        const data = layout(arcs);
+
+        // Liens d'abord (en dessous)
+        arcs.forEach(arc => {
+            if (arc.parent_id && data.byId[arc.parent_id]) {
+                const p = data.byId[arc.parent_id];
+                const px = p._x + NODE_W / 2;
+                const py = p._y;
+                const cx = arc._x - NODE_W / 2;
+                const cy = arc._y;
+                const midX = (px + cx) / 2;
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("class", "link");
+                path.setAttribute("d",
+                    "M" + px + "," + py +
+                    " C" + midX + "," + py +
+                    " " + midX + "," + cy +
+                    " " + cx + "," + cy);
+                group.appendChild(path);
+            }
+        });
+
+        // Nœuds
+        arcs.forEach(arc => {
+            group.appendChild(construireNoeudSVG(arc));
+        });
+
+        // Calcul des bornes pour recentrer plus tard
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        arcs.forEach(a => {
+            minX = Math.min(minX, a._x - NODE_W / 2);
+            maxX = Math.max(maxX, a._x + NODE_W / 2);
+            minY = Math.min(minY, a._y - NODE_H / 2);
+            maxY = Math.max(maxY, a._y + NODE_H / 2);
+        });
+        contentBounds = { minX, minY, maxX, maxY };
+
+        recentrer();
+    }
+
+    function construireNoeudSVG(arc) {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "node");
+        g.setAttribute("transform",
+            "translate(" + (arc._x - NODE_W / 2) + "," + (arc._y - NODE_H / 2) + ")");
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("width", NODE_W);
+        rect.setAttribute("height", NODE_H);
+        g.appendChild(rect);
+
+        // Titre (tronqué si trop long)
+        const titre = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        titre.setAttribute("class", "titre");
+        titre.setAttribute("x", 14);
+        titre.setAttribute("y", 26);
+        const titreTxt = (arc.titre || "").length > 32
+            ? arc.titre.slice(0, 30) + "…"
+            : (arc.titre || "");
+        titre.textContent = titreTxt;
+        g.appendChild(titre);
 
         // Date
         if (arc.date_univers && arc.date_univers.trim()) {
-            const dateEl = document.createElement("div");
-            dateEl.className = "frise-date";
-            dateEl.textContent = arc.date_univers;
-            carte.appendChild(dateEl);
+            const date = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            date.setAttribute("class", "date");
+            date.setAttribute("x", 14);
+            date.setAttribute("y", 48);
+            date.textContent = arc.date_univers.slice(0, 34);
+            g.appendChild(date);
         }
-
-        // Titre
-        const titre = document.createElement("h3");
-        titre.className = "frise-titre";
-        titre.textContent = arc.titre;
-        carte.appendChild(titre);
 
         // Lieu
         if (arc.lieu && arc.lieu.trim()) {
-            const lieu = document.createElement("div");
-            lieu.className = "frise-lieu";
-            lieu.textContent = arc.lieu;
-            carte.appendChild(lieu);
+            const lieu = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            lieu.setAttribute("class", "lieu");
+            lieu.setAttribute("x", 14);
+            lieu.setAttribute("y", 64);
+            lieu.textContent = arc.lieu.slice(0, 30);
+            g.appendChild(lieu);
         }
 
-        // Thèmes
-        if (arc.themes && arc.themes.length > 0) {
-            const themes = document.createElement("div");
-            themes.className = "frise-themes";
-            arc.themes.forEach(function (t) {
-                const tag = document.createElement("span");
-                tag.className = "frise-theme";
-                tag.textContent = t;
-                themes.appendChild(tag);
-            });
-            carte.appendChild(themes);
-        }
+        // Clic → page de l'arc
+        g.addEventListener("click", function (e) {
+            e.stopPropagation();
+            window.location.href = "arc.html#" + arc.id;
+        });
 
-        // Tags
-        if (arc.tags && arc.tags.length > 0) {
-            const tags = document.createElement("div");
-            tags.className = "frise-tags";
-            arc.tags.forEach(function (t) {
-                const tag = document.createElement("span");
-                tag.className = "frise-tag";
-                tag.textContent = t;
-                tags.appendChild(tag);
-            });
-            carte.appendChild(tags);
-        }
-
-        noeud.appendChild(carte);
-        return noeud;
+        return g;
     }
 
-    // ---- Bouton retour en haut ----
-    const btn = document.getElementById('backToTop');
-    window.addEventListener('scroll', function () {
-        if (window.scrollY > 200) btn.classList.add('visible');
-        else btn.classList.remove('visible');
+    // ============================================================
+    // PAN / ZOOM
+    // ============================================================
+    function recentrer() {
+        if (!contentBounds) return;
+        const W = canvas.clientWidth;
+        const H = canvas.clientHeight;
+        const cw = contentBounds.maxX - contentBounds.minX;
+        const ch = contentBounds.maxY - contentBounds.minY;
+        const padX = 80, padY = 80;
+        const scaleX = (W - padX * 2) / (cw || 1);
+        const scaleY = (H - padY * 2) / (ch || 1);
+        zoom = Math.min(scaleX, scaleY, 1.4);
+        zoom = Math.max(0.15, zoom);
+
+        const cx = (contentBounds.minX + contentBounds.maxX) / 2;
+        const cy = (contentBounds.minY + contentBounds.maxY) / 2;
+        panX = W / 2 - cx * zoom;
+        panY = H / 2 - cy * zoom;
+        appliquerTransform();
+    }
+
+    // Zoom à la molette
+    canvas.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const facteur = e.deltaY < 0 ? 1.12 : 0.89;
+        const nouveauZoom = Math.max(0.15, Math.min(4, zoom * facteur));
+        // Zoom centré sur le curseur
+        panX = mx - (mx - panX) * (nouveauZoom / zoom);
+        panY = my - (my - panY) * (nouveauZoom / zoom);
+        zoom = nouveauZoom;
+        appliquerTransform();
+    }, { passive: false });
+
+    // Drag souris
+    let dragging = false, lastX = 0, lastY = 0;
+    canvas.addEventListener("mousedown", function (e) {
+        dragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        canvas.classList.add("grabbing");
     });
-    btn.addEventListener('click', function () {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.addEventListener("mousemove", function (e) {
+        if (!dragging) return;
+        panX += e.clientX - lastX;
+        panY += e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        appliquerTransform();
+    });
+    window.addEventListener("mouseup", function () {
+        dragging = false;
+        canvas.classList.remove("grabbing");
     });
 
-    // ---- Démarrage ----
-    afficherFrise();
+    // Touch : drag + pinch
+    let touchStart = null;
+    canvas.addEventListener("touchstart", function (e) {
+        if (e.touches.length === 1) {
+            touchStart = {
+                mode: "pan",
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+            };
+        } else if (e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            touchStart = { mode: "pinch", dist: Math.hypot(dx, dy) };
+        }
+    }, { passive: true });
+
+    canvas.addEventListener("touchmove", function (e) {
+        if (!touchStart) return;
+        if (touchStart.mode === "pan" && e.touches.length === 1) {
+            e.preventDefault();
+            panX += e.touches[0].clientX - touchStart.x;
+            panY += e.touches[0].clientY - touchStart.y;
+            touchStart.x = e.touches[0].clientX;
+            touchStart.y = e.touches[0].clientY;
+            appliquerTransform();
+        } else if (touchStart.mode === "pinch" && e.touches.length === 2) {
+            e.preventDefault();
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const dist = Math.hypot(dx, dy);
+            const nouveauZoom = Math.max(0.15, Math.min(4, zoom * (dist / touchStart.dist)));
+            zoom = nouveauZoom;
+            touchStart.dist = dist;
+            appliquerTransform();
+        }
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", function () { touchStart = null; });
+
+    // Boutons
+    document.getElementById("btn-in").addEventListener("click", function () {
+        zoom = Math.min(4, zoom * 1.25);
+        appliquerTransform();
+    });
+    document.getElementById("btn-out").addEventListener("click", function () {
+        zoom = Math.max(0.15, zoom * 0.8);
+        appliquerTransform();
+    });
+    document.getElementById("btn-reset").addEventListener("click", recentrer);
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    async function init() {
+        try {
+            const arcs = await chargerArcsPourArbre();
+            dessinerArbre(arcs);
+        } catch (err) {
+            console.error(err);
+            infoVide.textContent = "Impossible de charger les arcs.";
+            infoVide.style.display = "flex";
+        }
+    }
+    init();
+
+    // Redessiner au redimensionnement
+    let resizeTimer = null;
+    window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(recentrer, 200);
+    });
 </script>
 
 </body>

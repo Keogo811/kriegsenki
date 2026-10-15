@@ -547,6 +547,14 @@
         </div>
 
         <div class="champ">
+            <label for="select-parent">Arc parent</label>
+            <select id="select-parent">
+                <option value="">Aucun (racine)</option>
+            </select>
+            <span class="aide">L'arc dont celui-ci découle. Utilisé pour dessiner l'arbre de l'Univers.</span>
+        </div>
+
+        <div class="champ">
             <label for="input-themes">Thèmes</label>
             <input type="text" id="input-themes" placeholder="Guerre, Deuil, Famille, Pouvoir…">
             <span class="aide">Sépare les thèmes par des virgules. Ils apparaîtront sur la vue Univers.</span>
@@ -680,6 +688,7 @@
     const inputLieu = document.getElementById("input-lieu");
     const inputThemes = document.getElementById("input-themes");
     const inputTags = document.getElementById("input-tags");
+    const selectParent = document.getElementById("select-parent");
     const selectStatut = document.getElementById("select-statut");
     const selectBoite = document.getElementById("select-boite");
     const btnSave = document.getElementById("btn-save");
@@ -721,7 +730,7 @@
             majCompteur();
         });
     });
-    [selectStatut, selectBoite].forEach(function (el) {
+    [selectStatut, selectBoite, selectParent].forEach(function (el) {
         el.addEventListener("change", marquerModifie);
     });
 
@@ -748,6 +757,16 @@
                 selectBoite.appendChild(opt);
             });
 
+            // Charger tous les arcs (sauf celui-ci) pour le sélecteur de parent
+            const tous = await chargerArcsTous();
+            tous.forEach(function (a) {
+                if (a.id === id) return;
+                const opt = document.createElement("option");
+                opt.value = a.id;
+                opt.textContent = a.titre;
+                selectParent.appendChild(opt);
+            });
+
             const arc = await chargerArc(id);
             if (!arc) {
                 afficherMessage("Arc introuvable : " + id, "error");
@@ -760,6 +779,7 @@
             inputSynopsis.value = arc.synopsis || "";
             selectStatut.value = arc.statut || "brouillon";
             selectBoite.value = arc.boite_id || "";
+            selectParent.value = arc.parent_id || "";
             inputDate.value = arc.date_univers || "";
             inputLieu.value = arc.lieu || "";
             inputThemes.value = (arc.themes || []).join(", ");
@@ -811,6 +831,7 @@
                 synopsis: inputSynopsis.value,
                 statut: selectStatut.value,
                 boite_id: selectBoite.value || null,
+                parent_id: selectParent.value || null,
                 date_univers: inputDate.value.trim(),
                 lieu: inputLieu.value.trim(),
                 themes: listeDepuisChamp(inputThemes.value),
