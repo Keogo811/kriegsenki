@@ -21,3 +21,6 @@ imports/
 
 # Clés secrètes de migration
 migrer_config.py
+
+# Sauvegardes locales (ne pas versionner)
+sauvegardes/
