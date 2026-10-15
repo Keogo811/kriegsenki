@@ -37,6 +37,35 @@
             position: relative;
         }
 
+        /* ---- Éclats qui tombent en arrière-plan ---- */
+        .shards-bg {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .shard {
+            position: absolute;
+            top: -120px;
+            will-change: transform, opacity;
+            animation-name: chute;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes chute {
+            0%   { transform: translateY(-120px) rotate(0deg);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(115vh) rotate(540deg);  opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .shard { animation: none; display: none; }
+        }
+
         .deco { width: 100%; position: relative; pointer-events: none; }
         .deco.top { margin-bottom: -30px; }
         .deco.bottom { margin-top: -30px; }
@@ -205,7 +234,9 @@
         }
     </style>
 </head>
-<body>
+
+<!-- Éclats qui tombent en arrière-plan -->
+<div class="shards-bg" id="shards-bg" aria-hidden="true"></div>
 
 <!-- ============================================================
      DÉFINITIONS RÉUTILISABLES
@@ -586,6 +617,47 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/config.js"></script>
 <script src="data/api.js"></script>
+
+<script>
+    (function creerEclats() {
+        const conteneur = document.getElementById('shards-bg');
+        if (!conteneur) return;
+
+        const estMobile = window.innerWidth < 800;
+        const nb = estMobile ? 8 : 22;
+
+        for (let i = 0; i < nb; i++) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', '0 0 100 100');
+            svg.classList.add('shard');
+
+            const taille = 12 + Math.random() * 22;
+            svg.style.width = taille + 'px';
+            svg.style.height = taille + 'px';
+            svg.style.left = Math.random() * 100 + 'vw';
+
+            const duree = 14 + Math.random() * 18;
+            svg.style.animationDuration = duree + 's';
+            svg.style.animationDelay = -(Math.random() * duree) + 's';
+
+            const estAlice = Math.random() < 0.25;
+            const opacite = 0.35 + Math.random() * 0.45;
+            const couleur = estAlice
+                ? 'rgba(160, 184, 208, ' + opacite + ')'
+                : 'rgba(216, 216, 228, ' + opacite + ')';
+
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '50,4 86,30 70,88 22,76 12,28');
+            poly.setAttribute('fill', couleur);
+            poly.setAttribute('stroke', 'rgba(232, 232, 244, 0.7)');
+            poly.setAttribute('stroke-width', '0.6');
+            poly.setAttribute('stroke-linejoin', 'miter');
+
+            svg.appendChild(poly);
+            conteneur.appendChild(svg);
+        }
+    })();
+</script>
 
 <!-- 2) On transforme cette liste en cartes HTML -->
 <script>
