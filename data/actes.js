@@ -122,6 +122,12 @@ const ACTES = [
     { id: "kofun-11", arcId: "kofun", numero: 11, titre: "Acte XI – Une Offrande Inadaptée", statut: "redaction" },
     { id: "kofun-12", arcId: "kofun", numero: 12, titre: "Acte XII – Cruel", statut: "redaction" },
 
+    { id: "epineaimee-1", arcId: "epineaimee", numero: 1, titre: "Acte 1 - L'enfant qui venait toujours", statut: "redaction" },
+    { id: "epineaimee-2", arcId: "epineaimee", numero: 2, titre: "Acte 2 - Le temps suspendu", statut: "redaction" },
+    { id: "epineaimee-3", arcId: "epineaimee", numero: 3, titre: "Acte 3 - Ce qui reste", statut: "redaction" },
+    { id: "epineaimee-4", arcId: "epineaimee", numero: 4, titre: "Acte 4 - La nuit", statut: "redaction" },
+    { id: "epineaimee-5", arcId: "epineaimee", numero: 5, titre: "Acte 4.5 - Ce que j'ai vu ⚠️ DISCLAIMER ⚠️", statut: "redaction" },
+
     // >>> AUTO-IMPORT ACTES <<<
     // Les actes importés sont insérés automatiquement ici. Ne pas supprimer.
 

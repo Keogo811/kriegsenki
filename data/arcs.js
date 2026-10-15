@@ -69,6 +69,14 @@ const ARCS = [
         description: "La naissance de Wan, entre le sang d'un tombeau et la folie d'une déesse brisée."
     },
 
+    {
+        id: "epineaimee",
+        titre: "Epine Aimée",
+        statut: "redaction",
+        synopsisId: "epineaimee",
+        description: "Le destin d'un frère et sa soeur aveugle dans le drame d'une famille."
+    },
+
     // >>> AUTO-IMPORT ARCS <<<
     // Les arcs importés sont insérés automatiquement ici. Ne pas supprimer.
 
