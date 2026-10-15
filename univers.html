@@ -37,7 +37,7 @@
             flex-direction: column;
         }
 
-        /* ---- Éclats qui tombent (neutres) ---- */
+        /* ---- Éclats qui tombent ---- */
         .shards-bg {
             position: fixed; inset: 0; overflow: hidden;
             pointer-events: none; z-index: 1;
@@ -126,51 +126,89 @@
             padding: 0 10px;
         }
 
-        /* ---- Filtres ---- */
-        .filtres {
+        /* ---- Filtres (déroulable) ---- */
+        .filtres-wrap {
             position: relative;
-            z-index: 20;
-            padding: 0 20px 12px;
-            max-height: 130px;
-            overflow-y: auto;
-        }
-        .filtre-barre-top {
+            z-index: 30;
             text-align: center;
-            margin-bottom: 8px;
+            padding: 4px 20px 12px;
         }
-        .filtre-tout {
-            display: none;
-            padding: 6px 16px;
-            background: rgba(140, 26, 40, 0.18);
-            border: 1px solid rgba(176, 24, 40, 0.5);
+        .filtres-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 22px;
+            background: rgba(28, 22, 36, 0.85);
+            border: 1px solid rgba(168, 168, 184, 0.3);
             border-radius: 999px;
-            color: #e0a8b0;
+            color: var(--heading);
             font-family: Georgia, serif;
-            font-size: 11px;
-            letter-spacing: 2px;
+            font-size: 12px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s ease, border-color 0.2s ease;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            backdrop-filter: blur(6px);
         }
-        .filtre-tout:hover {
-            background: rgba(140, 26, 40, 0.3);
+        .filtres-toggle:hover {
+            border-color: var(--silver-soft);
+            background: rgba(40, 30, 50, 0.9);
+        }
+        .filtres-toggle.ouvert {
             border-color: var(--red-bright);
-            color: #ffe0e4;
+            box-shadow: 0 0 14px rgba(176, 24, 40, 0.35);
         }
+        .filtres-toggle .fleche {
+            font-size: 10px;
+            transition: transform 0.25s ease;
+        }
+        .filtres-toggle.ouvert .fleche {
+            transform: rotate(180deg);
+        }
+        .filtres-count {
+            display: none;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--red);
+            color: #ffd0d6;
+            font-size: 10px;
+            letter-spacing: 0;
+            font-family: Consolas, monospace;
+        }
+        .filtres-count.visible { display: inline-block; }
+
+        .filtres-panel {
+            max-width: 900px;
+            margin: 12px auto 0;
+            padding: 18px 22px 16px;
+            background: rgba(20, 15, 26, 0.88);
+            border: 1px solid rgba(168, 168, 184, 0.22);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .filtres-panel[hidden] { display: none; }
+
         .filtre-ligne {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             align-items: center;
-            margin-bottom: 8px;
-            justify-content: center;
+            margin-bottom: 12px;
         }
+        .filtre-ligne:last-of-type { margin-bottom: 0; }
+
         .filtre-label {
             font-size: 11px;
             letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--text-soft);
             margin-right: 6px;
+            flex-shrink: 0;
+            min-width: 70px;
         }
         .filtre-pastille {
             padding: 4px 12px;
@@ -189,10 +227,46 @@
             background: rgba(40, 30, 50, 0.85);
         }
         .filtre-pastille.actif {
-            background: rgba(140, 26, 40, 0.25);
+            background: rgba(140, 26, 40, 0.3);
             border-color: var(--red-bright);
             color: #ffd0d6;
             box-shadow: 0 0 10px rgba(176, 24, 40, 0.35);
+        }
+
+        .filtres-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(168, 168, 184, 0.12);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .filtres-info {
+            font-size: 12px;
+            color: var(--text-soft);
+            font-style: italic;
+        }
+        .filtres-effacer {
+            display: none;
+            padding: 5px 14px;
+            background: rgba(140, 26, 40, 0.18);
+            border: 1px solid rgba(176, 24, 40, 0.5);
+            border-radius: 999px;
+            color: #e0a8b0;
+            font-family: Georgia, serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .filtres-effacer.visible { display: inline-block; }
+        .filtres-effacer:hover {
+            background: rgba(140, 26, 40, 0.35);
+            border-color: var(--red-bright);
+            color: #ffe0e4;
         }
 
         /* ---- Canvas ---- */
@@ -278,41 +352,72 @@
         /* ---- Nœuds fancy ---- */
         .node { cursor: pointer; }
 
+        /* Ombre externe du nœud : simulée par filtre */
+        .node .shadow {
+            fill: rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
         .node rect.fond {
             fill: url(#nodeGrad);
             stroke: rgba(168, 168, 184, 0.4);
             stroke-width: 1;
-            rx: 8;
+            rx: 10;
+            ry: 10;
             transition: stroke 0.25s ease;
         }
-        .node rect.interne {
+
+        /* Ligne brillante du haut */
+        .node .highlight {
             fill: none;
-            stroke: rgba(200, 200, 220, 0.12);
-            stroke-width: 0.8;
-            rx: 6;
+            stroke: rgba(216, 216, 228, 0.22);
+            stroke-width: 1;
             pointer-events: none;
         }
+
+        /* Liseré intérieur fin */
+        .node rect.interne {
+            fill: none;
+            stroke: rgba(200, 200, 220, 0.1);
+            stroke-width: 0.7;
+            rx: 7;
+            ry: 7;
+            pointer-events: none;
+        }
+
+        /* Barre d'accent à gauche */
         .node rect.accent {
             fill: var(--red);
             rx: 2;
+            ry: 2;
             pointer-events: none;
             transition: fill 0.25s ease;
         }
-        .node:hover rect.fond { stroke: var(--red-bright); }
-        .node:hover rect.accent { fill: var(--red-bright); }
-        .node:hover { filter: drop-shadow(0 0 10px rgba(176, 24, 40, 0.5)); }
 
+        .node:hover rect.fond {
+            stroke: var(--red-bright);
+        }
+        .node:hover rect.accent {
+            fill: var(--red-bright);
+        }
+        .node:hover {
+            filter: drop-shadow(0 0 14px rgba(176, 24, 40, 0.55));
+        }
+
+        /* Lycoris discrète dans le coin bas-droite */
         .node .coin-lycoris {
-            opacity: 0.75;
+            opacity: 0.7;
             pointer-events: none;
             transition: opacity 0.25s ease;
         }
-        .node:hover .coin-lycoris { opacity: 1; }
+        .node:hover .coin-lycoris {
+            opacity: 1;
+        }
 
         .node text.titre {
             fill: var(--heading);
             font-family: Georgia, serif;
-            font-size: 13px;
+            font-size: 14px;
             letter-spacing: 0.5px;
             pointer-events: none;
         }
@@ -327,7 +432,7 @@
         .node text.lieu {
             fill: var(--alice);
             font-family: Georgia, serif;
-            font-size: 10px;
+            font-size: 11px;
             font-style: italic;
             pointer-events: none;
         }
@@ -355,6 +460,9 @@
             .titre-barre .soustitre { font-size: 12px; letter-spacing: 5px; }
             .controls { bottom: 90px; right: 12px; }
             .controls button { width: 38px; height: 38px; font-size: 16px; }
+            .filtres-panel { padding: 14px 14px 12px; margin: 10px 10px 0; }
+            .filtre-label { min-width: 60px; font-size: 10px; }
+            .filtre-pastille { padding: 3px 10px; font-size: 11px; }
         }
     </style>
 </head>
@@ -364,7 +472,7 @@
 <div class="stars-bg" id="stars-bg" aria-hidden="true"></div>
 
 <!-- ============================================================
-     BANDEAU MIROIR HAUT — beaucoup plus de brisures
+     BANDEAU MIROIR HAUT
      ============================================================ -->
 <div class="mirror-top">
     <svg viewBox="0 0 1200 115" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -415,7 +523,6 @@
             L35,58 L0,44
         "/>
 
-        <!-- Fissures principales qui descendent — BEAUCOUP plus nombreuses -->
         <g stroke="url(#crackTop)" stroke-width="0.9" fill="none" stroke-linejoin="miter" stroke-linecap="round">
             <path d="M65,40 L55,68 L70,90 L60,112"/>
             <path d="M105,44 L96,72 L112,92 L104,113"/>
@@ -445,7 +552,6 @@
             <path d="M1185,44 L1176,68 L1190,90 L1185,110"/>
         </g>
 
-        <!-- Fissures horizontales entre les verticales -->
         <g stroke="url(#crackTop)" stroke-width="0.7" fill="none" opacity="0.7" stroke-linecap="round">
             <path d="M55,68 L96,72"/>
             <path d="M96,72 L142,82"/>
@@ -490,7 +596,6 @@
             <path d="M1132,62 L1118,56 M1132,62 L1140,74"/>
         </g>
 
-        <!-- Lueurs -->
         <g>
             <circle cx="65" cy="40" r="5" fill="url(#glowTop)"/>
             <circle cx="155" cy="60" r="5" fill="url(#glowTop)"/>
@@ -526,7 +631,7 @@
 </div>
 
 <!-- ============================================================
-     BANDEAU MIROIR BAS — beaucoup plus de brisures
+     BANDEAU MIROIR BAS
      ============================================================ -->
 <div class="mirror-bottom">
     <svg viewBox="0 0 1200 105" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -684,20 +789,47 @@
     </svg>
 </div>
 
+<!-- ============================================================
+     TITRE
+     ============================================================ -->
 <div class="titre-barre">
     <h1>Univers</h1>
     <div class="soustitre">Krieg Senki</div>
 </div>
 
-<div class="filtres" id="filtres"></div>
+<!-- ============================================================
+     FILTRES (déroulable)
+     ============================================================ -->
+<div class="filtres-wrap">
+    <button class="filtres-toggle" id="filtres-toggle">
+        <span>Filtres</span>
+        <span class="filtres-count" id="filtres-count">0</span>
+        <span class="fleche">▼</span>
+    </button>
+    <div class="filtres-panel" id="filtres-panel" hidden>
+        <div id="filtres-contenu"></div>
+        <div class="filtres-actions">
+            <span class="filtres-info" id="filtres-info"></span>
+            <button class="filtres-effacer" id="filtres-effacer">✕ Effacer les filtres</button>
+        </div>
+    </div>
+</div>
 
+<!-- ============================================================
+     CANVAS
+     ============================================================ -->
 <div class="canvas" id="canvas">
     <svg id="svg-tree" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#241d2e"/>
-                <stop offset="100%" stop-color="#1a1424"/>
+                <stop offset="0%" stop-color="#2a2236"/>
+                <stop offset="55%" stop-color="#1e1826"/>
+                <stop offset="100%" stop-color="#171220"/>
             </linearGradient>
+            <radialGradient id="nodeShine" cx="0.15" cy="0" r="0.9">
+                <stop offset="0%" stop-color="#e8e8f4" stop-opacity="0.08"/>
+                <stop offset="100%" stop-color="#e8e8f4" stop-opacity="0"/>
+            </radialGradient>
             <g id="lycoris-mini">
                 <g fill="#8c1a28" fill-opacity="0.85" stroke="#b01828" stroke-width="0.5">
                     <path d="M50,50 C48,38 44,24 40,10 C38,3 42,0 45,4 C50,16 54,32 50,50 Z"/>
@@ -739,7 +871,7 @@
 
 <script>
     // ============================================================
-    // ÉCLATS QUI TOMBENT — neutres (argent / alice)
+    // ÉCLATS QUI TOMBENT
     // ============================================================
     (function creerEclats() {
         const conteneur = document.getElementById('shards-bg');
@@ -757,11 +889,11 @@
             const duree = 12 + Math.random() * 20;
             svg.style.animationDuration = duree + 's';
             svg.style.animationDelay = -(Math.random() * duree) + 's';
-            const estAlice = Math.random() < 0.35;
             const opacite = 0.3 + Math.random() * 0.4;
-            const couleur = estAlice
-                ? 'rgba(160, 184, 208, ' + opacite + ')'
-                : 'rgba(216, 216, 228, ' + opacite + ')';
+            const estClair = Math.random() < 0.5;
+            const couleur = estClair
+                ? 'rgba(216, 216, 228, ' + opacite + ')'
+                : 'rgba(168, 168, 184, ' + opacite + ')';
             const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
             poly.setAttribute('points', '50,4 86,30 70,88 22,76 12,28');
             poly.setAttribute('fill', couleur);
@@ -773,36 +905,24 @@
     })();
 
     // ============================================================
-    // ÉTOILES FIGÉES — formes variées, palette rouge/violet/bleu/rose
+    // ÉTOILES FIGÉES
     // ============================================================
     (function creerEtoiles() {
         const conteneur = document.getElementById('stars-bg');
         if (!conteneur) return;
-
         const couleurs = ['rouge', 'violet', 'bleu', 'rose'];
-
-        // Différentes formes (paths SVG pour viewBox 0 0 100 100)
         const formes = [
-            // 4 branches
             'M50,4 Q53,47 96,50 Q53,53 50,96 Q47,53 4,50 Q47,47 50,4 Z',
-            // 4 branches fines allongées
             'M50,0 Q52,48 100,50 Q52,52 50,100 Q48,52 0,50 Q48,48 50,0 Z',
-            // Étoile 5 branches
             'M50,5 L61,38 L96,38 L68,59 L79,92 L50,72 L21,92 L32,59 L4,38 L39,38 Z',
-            // Étoile 6 branches
             'M50,4 L60,35 L92,25 L72,50 L92,75 L60,65 L50,96 L40,65 L8,75 L28,50 L8,25 L40,35 Z',
-            // Losange fin
             'M50,6 L62,50 L50,94 L38,50 Z',
-            // Petit cercle lumineux
             'M50,50 m-30,0 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0',
-            // Étoile 8 branches (éclat)
             'M50,2 L55,45 L98,50 L55,55 L50,98 L45,55 L2,50 L45,45 Z'
         ];
-
         const tailles = ['s', 's', 's', 'm', 'm', 'l'];
         const estMobile = window.innerWidth < 800;
         const nb = estMobile ? 22 : 60;
-
         for (let i = 0; i < nb; i++) {
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('viewBox', '0 0 100 100');
@@ -811,13 +931,11 @@
             svg.classList.add('star-fig', taille, couleur);
             svg.style.left = Math.random() * 100 + 'vw';
             svg.style.top = Math.random() * 100 + 'vh';
-
             const forme = formes[Math.floor(Math.random() * formes.length)];
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', forme);
             path.setAttribute('fill', 'currentColor');
             path.setAttribute('fill-opacity', '0.9');
-
             svg.appendChild(path);
             conteneur.appendChild(svg);
         }
@@ -826,10 +944,10 @@
     // ============================================================
     // LAYOUT DE L'ARBRE
     // ============================================================
-    const NODE_W = 240;
-    const NODE_H = 78;
-    const X_GAP = 320;
-    const Y_GAP = 120;
+    const NODE_W = 260;
+    const NODE_H = 88;
+    const X_GAP = 340;
+    const Y_GAP = 130;
     const ROOT_GAP = 60;
 
     function layout(arcs) {
@@ -933,66 +1051,106 @@
         g.setAttribute("transform",
             "translate(" + (arc._x - NODE_W / 2) + "," + (arc._y - NODE_H / 2) + ")");
 
+        // Ombre (rect décalé légèrement)
+        const ombre = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        ombre.setAttribute("class", "shadow");
+        ombre.setAttribute("x", 2);
+        ombre.setAttribute("y", 4);
+        ombre.setAttribute("width", NODE_W);
+        ombre.setAttribute("height", NODE_H);
+        ombre.setAttribute("rx", 10);
+        ombre.setAttribute("ry", 10);
+        ombre.setAttribute("opacity", "0.35");
+        g.appendChild(ombre);
+
+        // Fond principal
         const fond = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         fond.setAttribute("class", "fond");
         fond.setAttribute("width", NODE_W);
         fond.setAttribute("height", NODE_H);
         g.appendChild(fond);
 
+        // Halo subtil (shine) au-dessus du fond
+        const shine = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        shine.setAttribute("x", 0);
+        shine.setAttribute("y", 0);
+        shine.setAttribute("width", NODE_W);
+        shine.setAttribute("height", NODE_H);
+        shine.setAttribute("rx", 10);
+        shine.setAttribute("ry", 10);
+        shine.setAttribute("fill", "url(#nodeShine)");
+        shine.setAttribute("pointer-events", "none");
+        g.appendChild(shine);
+
+        // Ligne brillante en haut
+        const highlight = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        highlight.setAttribute("class", "highlight");
+        highlight.setAttribute("x1", 14);
+        highlight.setAttribute("y1", 1);
+        highlight.setAttribute("x2", NODE_W - 14);
+        highlight.setAttribute("y2", 1);
+        g.appendChild(highlight);
+
+        // Barre d'accent à gauche
         const accent = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         accent.setAttribute("class", "accent");
         accent.setAttribute("x", 0);
-        accent.setAttribute("y", 10);
+        accent.setAttribute("y", 12);
         accent.setAttribute("width", 3);
-        accent.setAttribute("height", NODE_H - 20);
+        accent.setAttribute("height", NODE_H - 24);
         g.appendChild(accent);
 
+        // Liseré intérieur
         const interne = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         interne.setAttribute("class", "interne");
-        interne.setAttribute("x", 7);
-        interne.setAttribute("y", 6);
-        interne.setAttribute("width", NODE_W - 14);
-        interne.setAttribute("height", NODE_H - 12);
+        interne.setAttribute("x", 9);
+        interne.setAttribute("y", 7);
+        interne.setAttribute("width", NODE_W - 18);
+        interne.setAttribute("height", NODE_H - 14);
         g.appendChild(interne);
 
+        // Lycoris discrète en bas-droite
         const lycoris = document.createElementNS("http://www.w3.org/2000/svg", "use");
         lycoris.setAttribute("href", "#lycoris-mini");
-        lycoris.setAttribute("x", NODE_W - 26);
-        lycoris.setAttribute("y", NODE_H - 26);
-        lycoris.setAttribute("width", 20);
-        lycoris.setAttribute("height", 20);
+        lycoris.setAttribute("x", NODE_W - 30);
+        lycoris.setAttribute("y", NODE_H - 30);
+        lycoris.setAttribute("width", 22);
+        lycoris.setAttribute("height", 22);
         lycoris.setAttribute("class", "coin-lycoris");
         g.appendChild(lycoris);
 
+        // Titre
         const titre = document.createElementNS("http://www.w3.org/2000/svg", "text");
         titre.setAttribute("class", "titre");
-        titre.setAttribute("x", 16);
-        titre.setAttribute("y", 26);
-        const titreTxt = (arc.titre || "").length > 30
-            ? arc.titre.slice(0, 28) + "…"
+        titre.setAttribute("x", 18);
+        titre.setAttribute("y", 30);
+        const titreTxt = (arc.titre || "").length > 32
+            ? arc.titre.slice(0, 30) + "…"
             : (arc.titre || "");
         titre.textContent = titreTxt;
         g.appendChild(titre);
 
+        // Date
         if (arc.date_univers && arc.date_univers.trim()) {
             const date = document.createElementNS("http://www.w3.org/2000/svg", "text");
             date.setAttribute("class", "date");
-            date.setAttribute("x", 16);
-            date.setAttribute("y", 48);
-            date.textContent = arc.date_univers.slice(0, 32);
+            date.setAttribute("x", 18);
+            date.setAttribute("y", 54);
+            date.textContent = arc.date_univers.slice(0, 34);
             g.appendChild(date);
         }
 
+        // Lieu
         if (arc.lieu && arc.lieu.trim()) {
             const lieu = document.createElementNS("http://www.w3.org/2000/svg", "text");
             lieu.setAttribute("class", "lieu");
-            lieu.setAttribute("x", 16);
-            lieu.setAttribute("y", 64);
-            lieu.textContent = arc.lieu.slice(0, 28);
+            lieu.setAttribute("x", 18);
+            lieu.setAttribute("y", 72);
+            lieu.textContent = arc.lieu.slice(0, 30);
             g.appendChild(lieu);
         }
 
-        // Survol : affiche les liens de tag
+        // Survol : liens de tag
         g.addEventListener("mouseenter", function () {
             dessinerLiensTag(arc);
         });
@@ -1029,7 +1187,6 @@
         effacerLiensTag();
         const tagsCible = tagsDeArc(arcCible);
         if (tagsCible.length === 0) return;
-
         const tous = window.__arcs || [];
         tous.forEach(function (autre) {
             if (autre.id === arcCible.id) return;
@@ -1038,14 +1195,12 @@
                 return tagsAutre.indexOf(t) !== -1;
             });
             if (!commun) return;
-
             const x1 = arcCible._x;
             const y1 = arcCible._y;
             const x2 = autre._x;
             const y2 = autre._y;
             const mx = (x1 + x2) / 2;
             const my = (y1 + y2) / 2 - 30;
-
             const ligne = document.createElementNS("http://www.w3.org/2000/svg", "path");
             ligne.setAttribute("class", "tag-link");
             ligne.setAttribute("d",
@@ -1144,35 +1299,56 @@
     });
     document.getElementById("btn-reset").addEventListener("click", recentrer);
 
-    // ---- Filtres ----
+    // ============================================================
+    // FILTRES CUMULABLES + DÉROULABLE
+    // ============================================================
     let tousLesArcs = [];
-    let filtreActif = null; // { type: 'tag' | 'theme', valeur: '...' }
+    const tagsActifs = new Set();   // valeurs normalisées
+    const themesActifs = new Set(); // valeurs normalisées
 
-    async function init() {
-        try {
-            tousLesArcs = await chargerArcsPourArbre();
-            construireFiltres(tousLesArcs);
-            appliquerFiltre();
-        } catch (err) {
-            console.error(err);
-            infoVide.textContent = "Impossible de charger les arcs.";
-            infoVide.style.display = "flex";
+    const toggleBtn = document.getElementById('filtres-toggle');
+    const panel = document.getElementById('filtres-panel');
+    const countEl = document.getElementById('filtres-count');
+    const effacerBtn = document.getElementById('filtres-effacer');
+    const infoEl = document.getElementById('filtres-info');
+
+    toggleBtn.addEventListener('click', function () {
+        const ouvert = !panel.hidden;
+        panel.hidden = ouvert;
+        toggleBtn.classList.toggle('ouvert', !ouvert);
+    });
+
+    effacerBtn.addEventListener('click', function () {
+        tagsActifs.clear();
+        themesActifs.clear();
+        majUI();
+        appliquerFiltre();
+    });
+
+    function arcMatch(arc) {
+        if (tagsActifs.size > 0) {
+            const tagsArc = (arc.tags || []).map(normaliserTag);
+            const ok = Array.from(tagsActifs).some(function (t) {
+                return tagsArc.indexOf(t) !== -1;
+            });
+            if (!ok) return false;
         }
+        if (themesActifs.size > 0) {
+            const themesArc = (arc.themes || []).map(normaliserTag);
+            const ok = Array.from(themesActifs).some(function (t) {
+                return themesArc.indexOf(t) !== -1;
+            });
+            if (!ok) return false;
+        }
+        return true;
     }
 
     function appliquerFiltre() {
         let arcs;
-        if (!filtreActif) {
+        if (tagsActifs.size === 0 && themesActifs.size === 0) {
             arcs = tousLesArcs.slice();
         } else {
-            const cle = filtreActif.type === 'tag' ? 'tags' : 'themes';
-            const cible = normaliserTag(filtreActif.valeur);
-            arcs = tousLesArcs.filter(function (a) {
-                const liste = a[cle] || [];
-                return Array.isArray(liste) && liste.some(function (t) {
-                    return normaliserTag(t) === cible;
-                });
-            });
+            arcs = tousLesArcs.filter(arcMatch);
         }
         dessinerArbre(arcs);
     }
@@ -1187,22 +1363,8 @@
         const tags = Array.from(tagsSet).sort(function (a, b) { return a.localeCompare(b); });
         const themes = Array.from(themesSet).sort(function (a, b) { return a.localeCompare(b); });
 
-        const zone = document.getElementById('filtres');
-        zone.innerHTML = '';
-
-        // Bouton "tout afficher"
-        const barreTop = document.createElement('div');
-        barreTop.className = 'filtre-barre-top';
-        const btnTout = document.createElement('button');
-        btnTout.className = 'filtre-tout';
-        btnTout.textContent = '✕ Tout afficher';
-        btnTout.addEventListener('click', function () {
-            filtreActif = null;
-            majFiltresUI();
-            appliquerFiltre();
-        });
-        barreTop.appendChild(btnTout);
-        zone.appendChild(barreTop);
+        const contenu = document.getElementById('filtres-contenu');
+        contenu.innerHTML = '';
 
         function creerLigne(label, items, type) {
             if (items.length === 0) return;
@@ -1219,46 +1381,62 @@
                 btn.dataset.valeur = item;
                 btn.dataset.type = type;
                 btn.addEventListener('click', function () {
-                    const dejaActif = filtreActif
-                        && filtreActif.type === type
-                        && normaliserTag(filtreActif.valeur) === normaliserTag(item);
-                    if (dejaActif) {
-                        filtreActif = null;
+                    const norm = normaliserTag(item);
+                    const set = type === 'tag' ? tagsActifs : themesActifs;
+                    if (set.has(norm)) {
+                        set.delete(norm);
                     } else {
-                        filtreActif = { type: type, valeur: item };
+                        set.add(norm);
                     }
-                    majFiltresUI();
+                    majUI();
                     appliquerFiltre();
                 });
                 ligne.appendChild(btn);
             });
-            zone.appendChild(ligne);
+            contenu.appendChild(ligne);
         }
 
         creerLigne('Tags', tags, 'tag');
         creerLigne('Thèmes', themes, 'theme');
 
-        majFiltresUI();
+        majUI();
     }
 
-    function majFiltresUI() {
-        const zone = document.getElementById('filtres');
-        if (!zone) return;
+    function majUI() {
+        const contenu = document.getElementById('filtres-contenu');
+        if (contenu) {
+            const pastilles = contenu.querySelectorAll('.filtre-pastille');
+            pastilles.forEach(function (p) {
+                const norm = normaliserTag(p.dataset.valeur);
+                const set = p.dataset.type === 'tag' ? tagsActifs : themesActifs;
+                p.classList.toggle('actif', set.has(norm));
+            });
+        }
 
-        const pastilles = zone.querySelectorAll('.filtre-pastille');
-        pastilles.forEach(function (p) {
-            const actif = filtreActif
-                && p.dataset.type === filtreActif.type
-                && normaliserTag(p.dataset.valeur) === normaliserTag(filtreActif.valeur);
-            p.classList.toggle('actif', actif);
-        });
-
-        const btnTout = zone.querySelector('.filtre-tout');
-        if (btnTout) {
-            btnTout.style.display = filtreActif ? 'inline-block' : 'none';
+        const total = tagsActifs.size + themesActifs.size;
+        if (total > 0) {
+            countEl.textContent = total;
+            countEl.classList.add('visible');
+            effacerBtn.classList.add('visible');
+            infoEl.textContent = total + (total > 1 ? ' filtres actifs' : ' filtre actif');
+        } else {
+            countEl.classList.remove('visible');
+            effacerBtn.classList.remove('visible');
+            infoEl.textContent = '';
         }
     }
 
+    async function init() {
+        try {
+            tousLesArcs = await chargerArcsPourArbre();
+            construireFiltres(tousLesArcs);
+            appliquerFiltre();
+        } catch (err) {
+            console.error(err);
+            infoVide.textContent = "Impossible de charger les arcs.";
+            infoVide.style.display = "flex";
+        }
+    }
     init();
 
     let resizeTimer = null;
