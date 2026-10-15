@@ -200,3 +200,63 @@ async function echangerNumeroActes(acteA, acteB) {
         .eq('id', acteA.id);
     if (errA2) throw errA2;
 }
+
+
+async function creerArc(champs) {
+    // Génère un id unique simple si non fourni
+    if (!champs.id) {
+        champs.id = "arc-" + Date.now().toString(36);
+    }
+    if (champs.ordre === undefined) {
+        champs.ordre = 0;
+    }
+    const { data, error } = await sb
+        .from('arcs')
+        .insert(champs)
+        .select()
+        .single();
+    if (error) { console.error("Erreur creerArc :", error); throw error; }
+    return data;
+}
+
+async function supprimerArc(id) {
+    const { error } = await sb
+        .from('arcs')
+        .delete()
+        .eq('id', id);
+    if (error) { console.error("Erreur supprimerArc :", error); throw error; }
+}
+
+async function creerActe(champs) {
+    if (!champs.id) {
+        champs.id = "acte-" + Date.now().toString(36);
+    }
+    if (champs.contenu === undefined) champs.contenu = "";
+    const { data, error } = await sb
+        .from('actes')
+        .insert(champs)
+        .select()
+        .single();
+    if (error) { console.error("Erreur creerActe :", error); throw error; }
+    return data;
+}
+
+async function supprimerActe(id) {
+    const { error } = await sb
+        .from('actes')
+        .delete()
+        .eq('id', id);
+    if (error) { console.error("Erreur supprimerActe :", error); throw error; }
+}
+
+async function prochainNumeroActe(arcId) {
+    const { data, error } = await sb
+        .from('actes')
+        .select('numero')
+        .eq('arc_id', arcId)
+        .order('numero', { ascending: false })
+        .limit(1);
+    if (error) { console.error("Erreur prochainNumeroActe :", error); throw error; }
+    if (!data || data.length === 0) return 1;
+    return (data[0].numero || 0) + 1;
+}

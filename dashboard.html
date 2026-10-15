@@ -601,6 +601,7 @@
 <main>
     <div class="barre-actions">
         <p class="intro">Tous tes arcs et actes. Clique sur un arc pour voir ses actes.</p>
+        <button class="btn primary" id="btn-nouvel-arc">+ Nouvel arc</button>
         <button class="btn primary" id="btn-nouvelle-boite">+ Nouvelle boîte</button>
     </div>
 
@@ -1010,9 +1011,27 @@
         btnModifier.textContent = "Modifier";
         btnModifier.addEventListener("click", function (e) {
             e.stopPropagation();
-            alert("Édition d'arc : à venir à la prochaine étape.");
+            window.location.href = "editer-arc.html#" + arc.id;
         });
         header.appendChild(btnModifier);
+
+        const btnSuppr = document.createElement("button");
+        btnSuppr.className = "btn small";
+        btnSuppr.textContent = "Supprimer";
+        btnSuppr.title = "Supprimer définitivement cet arc et tous ses actes";
+        btnSuppr.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            const ok = confirm(
+                "Supprimer l'arc \"" + arc.titre + "\" ?\n" +
+                "Tous ses actes seront aussi supprimés. Action irréversible."
+            );
+            if (!ok) return;
+            try {
+                await supprimerArc(arc.id);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        header.appendChild(btnSuppr);
 
         bloc.appendChild(header);
 
@@ -1029,6 +1048,36 @@
         } else {
             actes.forEach(acte => liste.appendChild(construireLigneActe(acte)));
         }
+
+        // Bouton "Nouvel acte"
+        const ligneNouvel = document.createElement("div");
+        ligneNouvel.className = "acte-ligne";
+        ligneNouvel.style.justifyContent = "flex-start";
+
+        const btnNouvelActe = document.createElement("button");
+        btnNouvelActe.className = "btn small primary";
+        btnNouvelActe.textContent = "+ Nouvel acte";
+        btnNouvelActe.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            const titre = prompt("Titre du nouvel acte :");
+            if (!titre || !titre.trim()) return;
+            try {
+                const numero = await prochainNumeroActe(arc.id);
+                const nouvelActe = await creerActe({
+                    arc_id: arc.id,
+                    numero: numero,
+                    titre: titre.trim(),
+                    statut: "brouillon",
+                    contenu: ""
+                });
+                // On ouvre directement la page d'édition du nouvel acte
+                window.location.href = "editer-acte.html#" + nouvelActe.id;
+            } catch (err) {
+                alert("Erreur : " + err.message);
+            }
+        });
+        ligneNouvel.appendChild(btnNouvelActe);
+        liste.appendChild(ligneNouvel);
 
         header.addEventListener("click", function () {
             const ouvert = liste.style.display === "block";
@@ -1113,6 +1162,20 @@
         });
         ligne.appendChild(btnModifier);
 
+        const btnSuppr = document.createElement("button");
+        btnSuppr.className = "btn small";
+        btnSuppr.textContent = "Supprimer";
+        btnSuppr.addEventListener("click", async function (e) {
+            e.stopPropagation();
+            const ok = confirm("Supprimer l'acte \"" + acte.titre + "\" ? Action irréversible.");
+            if (!ok) return;
+            try {
+                await supprimerActe(acte.id);
+                await chargerTout();
+            } catch (err) { alert("Erreur : " + err.message); }
+        });
+        ligne.appendChild(btnSuppr);
+
         return ligne;
     }
 
@@ -1160,6 +1223,35 @@
 
     btnNouvelleBoite.addEventListener("click", nouvelleBoiteUI);
 
+    // ---- Nouvel arc ----
+
+    document.getElementById("btn-nouvel-arc").addEventListener("click", nouvelArcUI);
+
+    async function nouvelArcUI() {
+        const titre = prompt("Titre du nouvel arc :");
+        if (!titre || !titre.trim()) return;
+
+        const id = prompt(
+            "Identifiant technique (court, sans espaces) :",
+            "arc-" + Date.now().toString(36)
+        );
+        if (!id || !id.trim()) return;
+
+        const description = prompt("Description courte (apparaîtra sur l'accueil) :", "") || "";
+
+        try {
+            await creerArc({
+                id: id.trim(),
+                titre: titre.trim(),
+                description: description.trim(),
+                statut: "brouillon",
+                ordre: 0
+            });
+            await chargerTout();
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        }
+    }
     // ---- Init ----
     (async function init() {
         const user = await verifierAuth();
