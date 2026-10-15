@@ -534,6 +534,30 @@
             </div>
         </div>
 
+        <div class="champ-double">
+            <div class="champ">
+                <label for="input-date">Date dans l'univers</label>
+                <input type="text" id="input-date" placeholder="Ex : -800, Antiquité, 1943…">
+                <span class="aide">Texte libre. Tu peux mettre une année, une époque, ou une durée.</span>
+            </div>
+            <div class="champ">
+                <label for="input-lieu">Lieu principal</label>
+                <input type="text" id="input-lieu" placeholder="Ex : Sparte, Japon, Europe…">
+            </div>
+        </div>
+
+        <div class="champ">
+            <label for="input-themes">Thèmes</label>
+            <input type="text" id="input-themes" placeholder="Guerre, Deuil, Famille, Pouvoir…">
+            <span class="aide">Sépare les thèmes par des virgules. Ils apparaîtront sur la vue Univers.</span>
+        </div>
+
+        <div class="champ">
+            <label for="input-tags">Tags</label>
+            <input type="text" id="input-tags" placeholder="Io, Ia, Wan, Sparte…">
+            <span class="aide">Sépare les tags par des virgules. Utile pour filtrer et relier les arcs.</span>
+        </div>
+
         <div class="champ">
             <label for="input-synopsis">Synopsis</label>
             <textarea id="input-synopsis" placeholder="Synopsis long, affiché au-dessus des actes"></textarea>
@@ -652,6 +676,10 @@
     const inputTitre = document.getElementById("input-titre");
     const inputDescription = document.getElementById("input-description");
     const inputSynopsis = document.getElementById("input-synopsis");
+    const inputDate = document.getElementById("input-date");
+    const inputLieu = document.getElementById("input-lieu");
+    const inputThemes = document.getElementById("input-themes");
+    const inputTags = document.getElementById("input-tags");
     const selectStatut = document.getElementById("select-statut");
     const selectBoite = document.getElementById("select-boite");
     const btnSave = document.getElementById("btn-save");
@@ -687,7 +715,7 @@
         compteur.textContent = "Description " + nbDesc + " · Synopsis " + nbSyn;
     }
 
-    [inputTitre, inputDescription, inputSynopsis].forEach(function (el) {
+    [inputTitre, inputDescription, inputSynopsis, inputDate, inputLieu, inputThemes, inputTags].forEach(function (el) {
         el.addEventListener("input", function () {
             marquerModifie();
             majCompteur();
@@ -732,6 +760,10 @@
             inputSynopsis.value = arc.synopsis || "";
             selectStatut.value = arc.statut || "brouillon";
             selectBoite.value = arc.boite_id || "";
+            inputDate.value = arc.date_univers || "";
+            inputLieu.value = arc.lieu || "";
+            inputThemes.value = (arc.themes || []).join(", ");
+            inputTags.value = (arc.tags || []).join(", ");
 
             topbarId.textContent = arc.id;
             carteSousTitre.textContent = arc.titre || "Édition";
@@ -765,12 +797,24 @@
         cacherMessage();
 
         try {
+            // Transforme les chaînes "a, b, c" en tableaux ["a","b","c"]
+            function listeDepuisChamp(valeur) {
+                return valeur
+                    .split(",")
+                    .map(function (s) { return s.trim(); })
+                    .filter(function (s) { return s.length > 0; });
+            }
+
             await modifierArc(arcEnCours.id, {
                 titre: titre,
                 description: inputDescription.value,
                 synopsis: inputSynopsis.value,
                 statut: selectStatut.value,
                 boite_id: selectBoite.value || null,
+                date_univers: inputDate.value.trim(),
+                lieu: inputLieu.value.trim(),
+                themes: listeDepuisChamp(inputThemes.value),
+                tags: listeDepuisChamp(inputTags.value),
                 updated_at: new Date().toISOString()
             });
 
