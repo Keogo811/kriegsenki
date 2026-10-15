@@ -1,24 +1,21 @@
 # ============================================================
-# IMPORTER — Découpe un fichier .txt et met à jour les données
+# IMPORTER — Découpe un fichier .txt et envoie à Supabase
 # ------------------------------------------------------------
 # 1. Lit les .txt dans "imports/"
 # 2. Sépare le synopsis et chaque acte
-# 3. Écrit les .txt dans data/synopsis/ et data/actes/
-# 4. Ajoute automatiquement le bloc dans arcs.js
-# 5. Ajoute automatiquement les lignes dans actes.js
+# 3. Envoie le tout dans Supabase (tables arcs et actes)
 # ============================================================
 
 import os
 import re
+import json
+import urllib.request
+import urllib.error
+from migrer_config import SUPABASE_URL, SUPABASE_SERVICE_KEY
 
 DOSSIER_IMPORTS = "imports"
-DOSSIER_ACTES = os.path.join("data", "actes")
-DOSSIER_SYNOPSIS = os.path.join("data", "synopsis")
-FICHIER_ARCS = os.path.join("data", "arcs.js")
-FICHIER_ACTES = os.path.join("data", "actes.js")
-
-MARQUEUR_ARCS = "// >>> AUTO-IMPORT ARCS <<<"
-MARQUEUR_ACTES = "// >>> AUTO-IMPORT ACTES <<<"
+ENDPOINT_ARCS = SUPABASE_URL + "/rest/v1/arcs"
+ENDPOINT_ACTES = SUPABASE_URL + "/rest/v1/actes"
 
 MOTIF_ACTE = re.compile(r"^\s*[Aa][Cc][Tt][Ee]\b")
 
@@ -28,10 +25,20 @@ def lire_fichier(chemin):
         return f.read()
 
 
-def ecrire_fichier(chemin, contenu):
-    os.makedirs(os.path.dirname(chemin), exist_ok=True)
-    with open(chemin, "w", encoding="utf-8") as f:
-        f.write(contenu)
+def envoyer_supabase(url, lignes):
+    """Envoie un tableau d'objets à Supabase via l'API REST."""
+    data = json.dumps(lignes).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("apikey", SUPABASE_SERVICE_KEY)
+    req.add_header("Authorization", "Bearer " + SUPABASE_SERVICE_KEY)
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Prefer", "resolution=merge-duplicates,return=minimal")
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status, ""
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode("utf-8")
 
 
 def decouper(texte):
@@ -54,43 +61,6 @@ def decouper(texte):
     return synopsis, actes
 
 
-def inserer_dans_tableau(chemin, marqueur, nouvelle_entree):
-    """Insère un nouveau bloc avant la ligne marqueur."""
-    contenu = lire_fichier(chemin)
-    if marqueur not in contenu:
-        raise ValueError(
-            f"Marqueur '{marqueur}' introuvable dans {chemin}. "
-            "Vérifie que la ligne existe bien avant '];'."
-        )
-
-    index = contenu.index(marqueur)
-    avant = contenu[:index].rstrip()
-
-    # S'assurer qu'on a bien une virgule avant d'ajouter
-    if avant and not avant.endswith(",") and not avant.endswith("["):
-        avant += ","
-
-    nouveau_contenu = avant + "\n\n" + nouvelle_entree + "\n\n    " + contenu[index:]
-    ecrire_fichier(chemin, nouveau_contenu)
-
-
-def creer_bloc_arc(arc_id, titre, statut, synopsis_id, description):
-    return f"""    {{
-        id: "{arc_id}",
-        titre: "{titre}",
-        statut: "{statut}",
-        synopsisId: "{synopsis_id}",
-        description: "{description}"
-    }},"""
-
-
-def creer_ligne_acte(acte_id, arc_id, numero, titre, statut):
-    return (
-        f'    {{ id: "{acte_id}", arcId: "{arc_id}", numero: {numero}, '
-        f'titre: "{titre}", statut: "{statut}" }},'
-    )
-
-
 def traiter_fichier(nom_fichier):
     chemin = os.path.join(DOSSIER_IMPORTS, nom_fichier)
     texte = lire_fichier(chemin)
@@ -107,68 +77,71 @@ def traiter_fichier(nom_fichier):
         return
 
     print("\n--- Informations à fournir ---")
-    prefixe = input("Préfixe d'ID (ex: a1, a2, ak) : ").strip()
-    if not prefixe:
+    arc_id = input("Préfixe d'ID (ex: a1, a2, ak) : ").strip()
+    if not arc_id:
         print("Aucun préfixe. Annulé.")
         return
 
-    arc_id = prefixe
     arc_titre = input("Titre de l'arc : ").strip()
     arc_desc = input("Description courte : ").strip()
     arc_statut = input("Statut (publie / redaction / brouillon) [redaction] : ").strip()
     if not arc_statut:
         arc_statut = "redaction"
 
-    # Vérifier si l'arc existe déjà
-    arcs_contenu = lire_fichier(FICHIER_ARCS)
-    if f'id: "{arc_id}"' in arcs_contenu:
-        print(f"\n  ATTENTION : un arc avec l'id '{arc_id}' existe déjà.")
-        rep = input("  Continuer quand même ? (o/n) : ").strip().lower()
-        if rep != "o":
-            print("  Annulé.")
-            return
+    # Préparer les objets à envoyer
+    arc_obj = {
+        "id": arc_id,
+        "titre": arc_titre,
+        "statut": arc_statut,
+        "description": arc_desc,
+        "synopsis": synopsis,
+        "ordre": 0
+    }
 
-    # Préparer tous les fichiers
-    fichiers_texte = []
-    fichiers_texte.append((os.path.join(DOSSIER_SYNOPSIS, prefixe + ".txt"), synopsis))
+    actes_obj = []
     for i, acte in enumerate(actes, start=1):
-        chemin_acte = os.path.join(DOSSIER_ACTES, f"{prefixe}-{i}.txt")
-        fichiers_texte.append((chemin_acte, acte["corps"]))
-
-    bloc_arc = creer_bloc_arc(arc_id, arc_titre, arc_statut, prefixe, arc_desc)
-    lignes_actes = []
-    for i, acte in enumerate(actes, start=1):
-        acte_id = f"{prefixe}-{i}"
-        lignes_actes.append(
-            creer_ligne_acte(acte_id, arc_id, i, acte["titre"], arc_statut)
-        )
+        actes_obj.append({
+            "id": f"{arc_id}-{i}",
+            "arc_id": arc_id,
+            "numero": i,
+            "titre": acte["titre"],
+            "statut": arc_statut,
+            "contenu": acte["corps"]
+        })
 
     print("\n--- Résumé ---")
     print(f"  Arc     : {arc_titre}  (id: {arc_id})")
     print(f"  Statut  : {arc_statut}")
-    print(f"  Synopsis: data/synopsis/{prefixe}.txt")
-    print(f"  Actes   : {len(actes)} fichiers dans data/actes/")
-    print(f"  Ajout dans : data/arcs.js  et  data/actes.js")
+    print(f"  Synopsis: {len(synopsis)} caractères")
+    print(f"  Actes   : {len(actes_obj)}")
+    print(f"  Destination : Supabase (tables arcs et actes)")
 
-    rep = input("\nÉcrire tout ? (o/n) : ").strip().lower()
+    rep = input("\nEnvoyer à Supabase ? (o/n) : ").strip().lower()
     if rep != "o":
         print("Annulé.")
         return
 
-    # Écrire les fichiers texte
-    for chemin_cible, contenu in fichiers_texte:
-        ecrire_fichier(chemin_cible, contenu)
+    # Envoi de l'arc
+    print("\nEnvoi de l'arc…")
+    code, corps = envoyer_supabase(ENDPOINT_ARCS, [arc_obj])
+    if not (200 <= code < 300):
+        print(f"  ERREUR ({code}) : {corps[:400]}")
+        return
+    print(f"  OK ({code})")
 
-    # Insérer dans arcs.js
-    inserer_dans_tableau(FICHIER_ARCS, MARQUEUR_ARCS, bloc_arc)
+    # Envoi des actes
+    print("Envoi des actes…")
+    code, corps = envoyer_supabase(ENDPOINT_ACTES, actes_obj)
+    if not (200 <= code < 300):
+        print(f"  ERREUR ({code}) : {corps[:400]}")
+        print("  L'arc a été créé mais les actes ont échoué.")
+        print("  Relance après avoir corrigé, l'arc sera mis à jour (pas de doublon).")
+        return
+    print(f"  OK ({code})")
 
-    # Insérer dans actes.js (une ligne par acte)
-    bloc_actes = "\n".join(lignes_actes)
-    inserer_dans_tableau(FICHIER_ACTES, MARQUEUR_ACTES, bloc_actes)
-
-    print(f"\n  {len(fichiers_texte)} fichier(s) texte écrit(s).")
-    print(f"  arcs.js et actes.js mis à jour.")
-    print("  Rafraîchis le navigateur pour voir le nouvel arc.")
+    print(f"\n=== Import terminé ===")
+    print(f"  {len(actes_obj)} acte(s) et l'arc sont maintenant sur Supabase.")
+    print(f"  Rafraîchis le navigateur pour les voir.")
 
 
 def main():
