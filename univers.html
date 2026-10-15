@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Univers — Krieg Senki</title>
+    <style>
+        :root {
+            --bg: #17131d;
+            --card-bg: #1c1624;
+            --card-hover: #241d2e;
+            --text: #cdc2b8;
+            --text-soft: #8a8088;
+            --heading: #c8bcb4;
+            --silver: #a8a8b8;
+            --silver-soft: #807f8c;
+            --red: #8c1a28;
+            --red-bright: #b01828;
+            --mauve: #8a6a88;
+            --alice: #a0b8d0;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 19px;
+            line-height: 1.9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Éclats qui tombent */
+        .shards-bg {
+            position: fixed; inset: 0; overflow: hidden;
+            pointer-events: none; z-index: 1;
+        }
+        .shard {
+            position: absolute; top: -120px;
+            will-change: transform, opacity;
+            animation-name: chute;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        @keyframes chute {
+            0%   { transform: translateY(-120px) rotate(0deg);  opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(115vh) rotate(540deg); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .shard { animation: none; display: none; }
+        }
+
+        /* Lianes */
+        .vine {
+            position: fixed; top: 0; bottom: 0; width: 70px;
+            pointer-events: none; z-index: 1; opacity: 0.55;
+        }
+        .vine.left { left: 0; }
+        .vine.right { right: 0; transform: scaleX(-1); }
+        .vine svg { width: 100%; height: 100%; }
+
+        /* Contenu */
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px 110px;
+            position: relative;
+            z-index: 4;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 34px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            color: var(--heading);
+            text-align: center;
+            margin: 0 0 12px;
+            text-shadow:
+                0 0 18px rgba(200, 200, 220, 0.55),
+                0 0 40px rgba(176, 24, 40, 0.28);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-soft);
+            font-style: italic;
+            font-size: 14px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 46px;
+        }
+
+        .divider {
+            width: 120px;
+            height: 1px;
+            margin: 0 auto 46px;
+            background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
+        }
+
+        .placeholder {
+            text-align: center;
+            color: var(--text-soft);
+            font-style: italic;
+            font-size: 15px;
+            padding: 40px 20px;
+            border: 1px dashed var(--silver-soft);
+            border-radius: 4px;
+            margin-top: 40px;
+        }
+
+        .retour {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            color: var(--silver);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .retour:hover { color: var(--red-bright); }
+
+        #backToTop {
+            position: fixed;
+            bottom: 26px; right: 26px;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: rgba(30, 24, 38, 0.9);
+            border: 1px solid var(--silver-soft);
+            color: var(--silver);
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, border-color 0.25s ease, color 0.25s ease;
+            z-index: 100;
+        }
+        #backToTop.visible { opacity: 1; pointer-events: auto; }
+        #backToTop:hover { border-color: var(--red-bright); color: var(--red-bright); }
+
+        @media (max-width: 800px) {
+            body { font-size: 17px; }
+            h1 { font-size: 27px; }
+            .subtitle { font-size: 12px; letter-spacing: 3px; }
+            main { padding: 30px 20px 90px; }
+            .vine { width: 40px; opacity: 0.4; }
+            #backToTop { width: 46px; height: 46px; bottom: 18px; right: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Éclats -->
+<div class="shards-bg" id="shards-bg" aria-hidden="true"></div>
+
+<!-- Lianes latérales -->
+<div class="vine left">
+    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
+            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
+            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+        </g>
+    </svg>
+</div>
+<div class="vine right">
+    <svg viewBox="0 0 70 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#4a4258" stroke-width="1.1" fill="none" stroke-linecap="round">
+            <path d="M35,0 Q55,80 20,160 Q0,240 30,320 Q58,400 22,480 Q0,560 32,640 Q58,720 20,800 Q5,860 30,900"/>
+            <ellipse cx="58" cy="120" rx="3.5" ry="7" transform="rotate(35 58 120)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="8" cy="210" rx="3.5" ry="7" transform="rotate(-40 8 210)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="52" cy="370" rx="3.5" ry="7" transform="rotate(35 52 370)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+            <ellipse cx="10" cy="530" rx="3.5" ry="7" transform="rotate(-40 10 530)" fill="#4a4258" fill-opacity="0.85" stroke="none"/>
+        </g>
+    </svg>
+</div>
+
+<!-- CONTENU -->
+<main>
+    <h1>Univers</h1>
+    <p class="subtitle">Krieg Senki</p>
+    <div class="divider"></div>
+
+    <p class="placeholder">
+        La vue Univers arrive bientôt.<br>
+        Ici apparaîtront la frise chronologique et le graphe de liens entre tes arcs.
+    </p>
+
+    <a href="index.html" class="retour">← Retour aux arcs</a>
+</main>
+
+<!-- BOUTON RETOUR EN HAUT -->
+<button id="backToTop" aria-label="Retour en haut">↑</button>
+
+<!-- Éclats -->
+<script>
+    (function creerEclats() {
+        const conteneur = document.getElementById('shards-bg');
+        if (!conteneur) return;
+        const estMobile = window.innerWidth < 800;
+        const nb = estMobile ? 6 : 16;
+        for (let i = 0; i < nb; i++) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', '0 0 100 100');
+            svg.classList.add('shard');
+            const taille = 12 + Math.random() * 22;
+            svg.style.width = taille + 'px';
+            svg.style.height = taille + 'px';
+            svg.style.left = Math.random() * 100 + 'vw';
+            const duree = 14 + Math.random() * 18;
+            svg.style.animationDuration = duree + 's';
+            svg.style.animationDelay = -(Math.random() * duree) + 's';
+            const estAlice = Math.random() < 0.25;
+            const opacite = 0.35 + Math.random() * 0.45;
+            const couleur = estAlice
+                ? 'rgba(160, 184, 208, ' + opacite + ')'
+                : 'rgba(216, 216, 228, ' + opacite + ')';
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', '50,4 86,30 70,88 22,76 12,28');
+            poly.setAttribute('fill', couleur);
+            poly.setAttribute('stroke', 'rgba(232, 232, 244, 0.7)');
+            poly.setAttribute('stroke-width', '0.6');
+            svg.appendChild(poly);
+            conteneur.appendChild(svg);
+        }
+    })();
+
+    const btn = document.getElementById('backToTop');
+    window.addEventListener('scroll', function () {
+        if (window.scrollY > 200) btn.classList.add('visible');
+        else btn.classList.remove('visible');
+    });
+    btn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+
+</body>
+</html>
