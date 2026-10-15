@@ -18,6 +18,7 @@
             --red-bright: #b01828;
             --mauve: #8a6a88;
             --alice: #a0b8d0;
+            --border: rgba(168, 168, 184, 0.2);
         }
 
         * { box-sizing: border-box; }
@@ -27,8 +28,8 @@
             background: var(--bg);
             color: var(--text);
             font-family: Georgia, 'Times New Roman', serif;
-            font-size: 19px;
-            line-height: 1.9;
+            font-size: 17px;
+            line-height: 1.7;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
@@ -100,25 +101,162 @@
         .divider {
             width: 120px;
             height: 1px;
-            margin: 0 auto 46px;
+            margin: 0 auto 60px;
             background: linear-gradient(to right, transparent, var(--silver-soft), transparent);
         }
 
-        .placeholder {
+        /* ---- Frise verticale ---- */
+        .frise {
+            position: relative;
+            padding: 30px 0 40px;
+        }
+
+        /* La ligne verticale centrale */
+        .frise-ligne {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                var(--silver-soft) 6%,
+                var(--silver-soft) 94%,
+                transparent 100%);
+            transform: translateX(-1px);
+        }
+
+        /* Chaque nœud de la frise */
+        .frise-noeud {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        /* Alterne gauche / droite */
+        .frise-noeud:nth-child(odd) {
+            justify-content: flex-start;
+        }
+        .frise-noeud:nth-child(even) {
+            justify-content: flex-end;
+        }
+
+        /* Le point sur la ligne */
+        .frise-point {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--red);
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 12px rgba(176, 24, 40, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 2;
+        }
+
+        .frise-noeud:hover .frise-point {
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 0 20px rgba(176, 24, 40, 0.9);
+        }
+
+        /* La carte de l'arc */
+        .frise-carte {
+            width: 44%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 22px;
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+            position: relative;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        }
+
+        .frise-carte:hover {
+            background: var(--card-hover);
+            border-color: var(--silver-soft);
+            transform: translateY(-2px);
+        }
+
+        .frise-carte.gauche { margin-right: auto; text-align: right; border-left: 3px solid var(--red); }
+        .frise-carte.droite { margin-left: auto; text-align: left; border-right: 3px solid var(--red); }
+
+        .frise-date {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--red-bright);
+            margin-bottom: 6px;
+        }
+
+        .frise-titre {
+            font-size: 17px;
+            color: var(--heading);
+            font-weight: normal;
+            margin: 0 0 8px;
+            letter-spacing: 1px;
+        }
+
+        .frise-lieu {
+            font-size: 13px;
+            color: var(--alice);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .frise-themes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .frise-carte.gauche .frise-themes { justify-content: flex-end; }
+
+        .frise-theme {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(140, 26, 40, 0.15);
+            color: #e0a8b0;
+            letter-spacing: 1px;
+        }
+
+        .frise-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .frise-carte.gauche .frise-tags { justify-content: flex-end; }
+
+        .frise-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(168, 168, 184, 0.08);
+            color: var(--text-soft);
+            letter-spacing: 1px;
+            font-family: Consolas, monospace;
+        }
+
+        /* État vide / chargement */
+        .info {
             text-align: center;
             color: var(--text-soft);
             font-style: italic;
-            font-size: 15px;
             padding: 40px 20px;
-            border: 1px dashed var(--silver-soft);
-            border-radius: 4px;
-            margin-top: 40px;
         }
 
+        /* Retour */
         .retour {
             display: block;
             text-align: center;
-            margin-top: 40px;
+            margin-top: 60px;
             color: var(--silver);
             text-decoration: none;
             font-size: 13px;
@@ -127,6 +265,7 @@
         }
         .retour:hover { color: var(--red-bright); }
 
+        /* Bouton retour en haut */
         #backToTop {
             position: fixed;
             bottom: 26px; right: 26px;
@@ -146,12 +285,31 @@
         #backToTop.visible { opacity: 1; pointer-events: auto; }
         #backToTop:hover { border-color: var(--red-bright); color: var(--red-bright); }
 
+        /* ---- Mobile ---- */
         @media (max-width: 800px) {
-            body { font-size: 17px; }
+            body { font-size: 15px; }
             h1 { font-size: 27px; }
             .subtitle { font-size: 12px; letter-spacing: 3px; }
-            main { padding: 30px 20px 90px; }
-            .vine { width: 40px; opacity: 0.4; }
+            main { padding: 30px 16px 90px; }
+            .vine { display: none; }
+
+            /* Sur mobile : la frise passe à gauche, tout du même côté */
+            .frise-ligne { left: 20px; }
+            .frise-noeud {
+                justify-content: flex-start !important;
+                padding-left: 50px;
+            }
+            .frise-point { left: 20px; }
+            .frise-carte {
+                width: 100%;
+                text-align: left !important;
+                border-left: 3px solid var(--red) !important;
+                border-right: none !important;
+                margin: 0 !important;
+            }
+            .frise-carte .frise-themes,
+            .frise-carte .frise-tags { justify-content: flex-start !important; }
+
             #backToTop { width: 46px; height: 46px; bottom: 18px; right: 18px; }
         }
     </style>
@@ -191,10 +349,9 @@
     <p class="subtitle">Krieg Senki</p>
     <div class="divider"></div>
 
-    <p class="placeholder">
-        La vue Univers arrive bientôt.<br>
-        Ici apparaîtront la frise chronologique et le graphe de liens entre tes arcs.
-    </p>
+    <div id="frise-container">
+        <p class="info">Chargement…</p>
+    </div>
 
     <a href="index.html" class="retour">← Retour aux arcs</a>
 </main>
@@ -202,8 +359,12 @@
 <!-- BOUTON RETOUR EN HAUT -->
 <button id="backToTop" aria-label="Retour en haut">↑</button>
 
-<!-- Éclats -->
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/config.js"></script>
+<script src="data/api.js"></script>
 <script>
+    // ---- Éclats ----
     (function creerEclats() {
         const conteneur = document.getElementById('shards-bg');
         if (!conteneur) return;
@@ -235,6 +396,102 @@
         }
     })();
 
+    // ---- Frise ----
+    const friseContainer = document.getElementById('frise-container');
+
+    async function afficherFrise() {
+        try {
+            const arcs = await chargerArcs();
+            if (!arcs || arcs.length === 0) {
+                friseContainer.innerHTML = '<p class="info">Aucun arc à afficher pour l\'instant.</p>';
+                return;
+            }
+
+            friseContainer.innerHTML = "";
+            const frise = document.createElement("div");
+            frise.className = "frise";
+
+            const ligne = document.createElement("div");
+            ligne.className = "frise-ligne";
+            frise.appendChild(ligne);
+
+            arcs.forEach(function (arc, index) {
+                const cote = index % 2 === 0 ? "gauche" : "droite";
+                frise.appendChild(construireNoeud(arc, cote));
+            });
+
+            friseContainer.appendChild(frise);
+        } catch (err) {
+            console.error(err);
+            friseContainer.innerHTML = '<p class="info">Impossible de charger les arcs.</p>';
+        }
+    }
+
+    function construireNoeud(arc, cote) {
+        const noeud = document.createElement("div");
+        noeud.className = "frise-noeud";
+
+        const point = document.createElement("div");
+        point.className = "frise-point";
+        noeud.appendChild(point);
+
+        const carte = document.createElement("a");
+        carte.className = "frise-carte " + cote;
+        carte.href = "arc.html#" + arc.id;
+
+        // Date
+        if (arc.date_univers && arc.date_univers.trim()) {
+            const dateEl = document.createElement("div");
+            dateEl.className = "frise-date";
+            dateEl.textContent = arc.date_univers;
+            carte.appendChild(dateEl);
+        }
+
+        // Titre
+        const titre = document.createElement("h3");
+        titre.className = "frise-titre";
+        titre.textContent = arc.titre;
+        carte.appendChild(titre);
+
+        // Lieu
+        if (arc.lieu && arc.lieu.trim()) {
+            const lieu = document.createElement("div");
+            lieu.className = "frise-lieu";
+            lieu.textContent = arc.lieu;
+            carte.appendChild(lieu);
+        }
+
+        // Thèmes
+        if (arc.themes && arc.themes.length > 0) {
+            const themes = document.createElement("div");
+            themes.className = "frise-themes";
+            arc.themes.forEach(function (t) {
+                const tag = document.createElement("span");
+                tag.className = "frise-theme";
+                tag.textContent = t;
+                themes.appendChild(tag);
+            });
+            carte.appendChild(themes);
+        }
+
+        // Tags
+        if (arc.tags && arc.tags.length > 0) {
+            const tags = document.createElement("div");
+            tags.className = "frise-tags";
+            arc.tags.forEach(function (t) {
+                const tag = document.createElement("span");
+                tag.className = "frise-tag";
+                tag.textContent = t;
+                tags.appendChild(tag);
+            });
+            carte.appendChild(tags);
+        }
+
+        noeud.appendChild(carte);
+        return noeud;
+    }
+
+    // ---- Bouton retour en haut ----
     const btn = document.getElementById('backToTop');
     window.addEventListener('scroll', function () {
         if (window.scrollY > 200) btn.classList.add('visible');
@@ -243,6 +500,9 @@
     btn.addEventListener('click', function () {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    // ---- Démarrage ----
+    afficherFrise();
 </script>
 
 </body>
