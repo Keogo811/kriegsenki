@@ -126,6 +126,75 @@
             padding: 0 10px;
         }
 
+        /* ---- Filtres ---- */
+        .filtres {
+            position: relative;
+            z-index: 20;
+            padding: 0 20px 12px;
+            max-height: 130px;
+            overflow-y: auto;
+        }
+        .filtre-barre-top {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .filtre-tout {
+            display: none;
+            padding: 6px 16px;
+            background: rgba(140, 26, 40, 0.18);
+            border: 1px solid rgba(176, 24, 40, 0.5);
+            border-radius: 999px;
+            color: #e0a8b0;
+            font-family: Georgia, serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .filtre-tout:hover {
+            background: rgba(140, 26, 40, 0.3);
+            border-color: var(--red-bright);
+            color: #ffe0e4;
+        }
+        .filtre-ligne {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        .filtre-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-soft);
+            margin-right: 6px;
+        }
+        .filtre-pastille {
+            padding: 4px 12px;
+            background: rgba(28, 22, 36, 0.8);
+            border: 1px solid rgba(168, 168, 184, 0.25);
+            border-radius: 999px;
+            color: var(--text);
+            font-family: Georgia, serif;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .filtre-pastille:hover {
+            border-color: var(--silver-soft);
+            background: rgba(40, 30, 50, 0.85);
+        }
+        .filtre-pastille.actif {
+            background: rgba(140, 26, 40, 0.25);
+            border-color: var(--red-bright);
+            color: #ffd0d6;
+            box-shadow: 0 0 10px rgba(176, 24, 40, 0.35);
+        }
+
         /* ---- Canvas ---- */
         .canvas {
             position: relative;
@@ -620,6 +689,8 @@
     <div class="soustitre">Krieg Senki</div>
 </div>
 
+<div class="filtres" id="filtres"></div>
+
 <div class="canvas" id="canvas">
     <svg id="svg-tree" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -1073,16 +1144,121 @@
     });
     document.getElementById("btn-reset").addEventListener("click", recentrer);
 
+    // ---- Filtres ----
+    let tousLesArcs = [];
+    let filtreActif = null; // { type: 'tag' | 'theme', valeur: '...' }
+
     async function init() {
         try {
-            const arcs = await chargerArcsPourArbre();
-            dessinerArbre(arcs);
+            tousLesArcs = await chargerArcsPourArbre();
+            construireFiltres(tousLesArcs);
+            appliquerFiltre();
         } catch (err) {
             console.error(err);
             infoVide.textContent = "Impossible de charger les arcs.";
             infoVide.style.display = "flex";
         }
     }
+
+    function appliquerFiltre() {
+        let arcs;
+        if (!filtreActif) {
+            arcs = tousLesArcs.slice();
+        } else {
+            const cle = filtreActif.type === 'tag' ? 'tags' : 'themes';
+            const cible = normaliserTag(filtreActif.valeur);
+            arcs = tousLesArcs.filter(function (a) {
+                const liste = a[cle] || [];
+                return Array.isArray(liste) && liste.some(function (t) {
+                    return normaliserTag(t) === cible;
+                });
+            });
+        }
+        dessinerArbre(arcs);
+    }
+
+    function construireFiltres(arcs) {
+        const tagsSet = new Set();
+        const themesSet = new Set();
+        arcs.forEach(function (a) {
+            (a.tags || []).forEach(function (t) { if (t && t.trim()) tagsSet.add(t.trim()); });
+            (a.themes || []).forEach(function (t) { if (t && t.trim()) themesSet.add(t.trim()); });
+        });
+        const tags = Array.from(tagsSet).sort(function (a, b) { return a.localeCompare(b); });
+        const themes = Array.from(themesSet).sort(function (a, b) { return a.localeCompare(b); });
+
+        const zone = document.getElementById('filtres');
+        zone.innerHTML = '';
+
+        // Bouton "tout afficher"
+        const barreTop = document.createElement('div');
+        barreTop.className = 'filtre-barre-top';
+        const btnTout = document.createElement('button');
+        btnTout.className = 'filtre-tout';
+        btnTout.textContent = '✕ Tout afficher';
+        btnTout.addEventListener('click', function () {
+            filtreActif = null;
+            majFiltresUI();
+            appliquerFiltre();
+        });
+        barreTop.appendChild(btnTout);
+        zone.appendChild(barreTop);
+
+        function creerLigne(label, items, type) {
+            if (items.length === 0) return;
+            const ligne = document.createElement('div');
+            ligne.className = 'filtre-ligne';
+            const lbl = document.createElement('span');
+            lbl.className = 'filtre-label';
+            lbl.textContent = label;
+            ligne.appendChild(lbl);
+            items.forEach(function (item) {
+                const btn = document.createElement('button');
+                btn.className = 'filtre-pastille';
+                btn.textContent = item;
+                btn.dataset.valeur = item;
+                btn.dataset.type = type;
+                btn.addEventListener('click', function () {
+                    const dejaActif = filtreActif
+                        && filtreActif.type === type
+                        && normaliserTag(filtreActif.valeur) === normaliserTag(item);
+                    if (dejaActif) {
+                        filtreActif = null;
+                    } else {
+                        filtreActif = { type: type, valeur: item };
+                    }
+                    majFiltresUI();
+                    appliquerFiltre();
+                });
+                ligne.appendChild(btn);
+            });
+            zone.appendChild(ligne);
+        }
+
+        creerLigne('Tags', tags, 'tag');
+        creerLigne('Thèmes', themes, 'theme');
+
+        majFiltresUI();
+    }
+
+    function majFiltresUI() {
+        const zone = document.getElementById('filtres');
+        if (!zone) return;
+
+        const pastilles = zone.querySelectorAll('.filtre-pastille');
+        pastilles.forEach(function (p) {
+            const actif = filtreActif
+                && p.dataset.type === filtreActif.type
+                && normaliserTag(p.dataset.valeur) === normaliserTag(filtreActif.valeur);
+            p.classList.toggle('actif', actif);
+        });
+
+        const btnTout = zone.querySelector('.filtre-tout');
+        if (btnTout) {
+            btnTout.style.display = filtreActif ? 'inline-block' : 'none';
+        }
+    }
+
     init();
 
     let resizeTimer = null;
