@@ -506,6 +506,42 @@
 
     <h2 class="section-title">Actes</h2>
     <div class="actes" id="actes-container"></div>
+
+    <section class="commentaires-section" id="commentaires-section" style="margin-top:50px; padding-top:30px; border-top:1px solid rgba(168,168,184,0.2);">
+        <style>
+            .commentaires-titre { font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: #a8a8b8; margin-bottom: 20px; font-family: Georgia, serif; }
+            .aucun-commentaire { color: #8a8088; font-style: italic; font-size: 15px; font-family: Georgia, serif; }
+            .commentaire-form { margin-top: 30px; display: flex; flex-direction: column; gap: 12px; }
+            .commentaire-form label { display: block; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #a8a8b8; font-family: Georgia, serif; margin:0; }
+            .commentaire-form textarea { width: 100% !important; min-height: 100px; padding: 14px !important; background: #17131d !important; border: 1px solid #3a3245 !important; border-radius: 4px !important; color: #cdc2b8 !important; font-family: Georgia, serif !important; font-size: 15px; resize: vertical; box-sizing: border-box; display:block; }
+            .commentaire-form textarea:focus { outline: none; border-color: #b01828 !important; }
+            .commentaire-form button { margin-top: 10px; align-self: flex-start; padding: 10px 24px; background: #1c1624 !important; border: 1px solid #807f8c !important; border-radius: 4px; color: #c8bcb4 !important; font-family: Georgia, serif !important; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
+            .commentaire-form button:hover { border-color: #b01828 !important; color: #b01828 !important; }
+            .message-commentaire { display: none; padding: 10px 14px; border-radius: 4px; font-size: 14px; margin-top: 10px; font-family: Georgia, serif; }
+            .message-commentaire.visible { display: block; }
+            .message-commentaire.success { background: rgba(160,184,208,0.1); border-left: 3px solid #a0b8d0; color: #a0b8d0; }
+            .message-commentaire.error { background: rgba(140,26,40,0.15); border-left: 3px solid #b01828; color: #e0a8a8; }
+            .commentaire-item { background: #1c1624; border: 1px solid rgba(168,168,184,0.2); border-left: 3px solid #807f8c; border-radius: 4px; padding: 16px 20px; margin-bottom: 16px; font-family: Georgia, serif; }
+            .commentaire-meta { font-size: 12px; color: #8a8088; margin-bottom: 8px; font-style: italic; }
+            .commentaire-contenu { font-size: 16px; color: #cdc2b8; line-height: 1.6; white-space: pre-line; }
+            .reponse-admin { margin-top: 14px; padding: 12px 16px; background: rgba(140,26,40,0.1); border-left: 2px solid #8c1a28; border-radius: 3px; }
+            .reponse-admin .label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #b01828; margin-bottom: 4px; display: block; }
+            .reponse-admin .texte { font-size: 15px; color: #c8bcb4; white-space: pre-line; }
+        </style>
+        
+        <div class="commentaires-titre">Commentaires sur l'arc</div>
+        <div id="commentaires-liste">
+            <p class="aucun-commentaire">Chargement…</p>
+        </div>
+        
+        <form class="commentaire-form" id="commentaire-form" style="display:none;">
+            <label for="nouveau-commentaire">Laisser un commentaire anonyme</label>
+            <textarea id="nouveau-commentaire" placeholder="Ton message ici... (Les commentaires sont modérés avant publication.)" required></textarea>
+            <button type="submit" id="btn-envoyer-commentaire">Envoyer</button>
+            <div class="message-commentaire" id="message-commentaire"></div>
+        </form>
+    </section>
+
     <p class="empty-note" id="actes-vide" style="display:none;">
         Aucun acte pour cet arc pour l'instant.
     </p>
@@ -744,7 +780,87 @@
             });
         }
 
+        // --- Commentaires sur l'arc ---
+        const commListe = document.getElementById("commentaires-liste");
+        const commForm = document.getElementById("commentaire-form");
+        const commTextarea = document.getElementById("nouveau-commentaire");
+        const btnEnvoyer = document.getElementById("btn-envoyer-commentaire");
+        const msgComm = document.getElementById("message-commentaire");
+
+        async function chargerCommentairesUI(arcId) {
+            commListe.innerHTML = '<p class="aucun-commentaire">Chargement…</p>';
+            commForm.style.display = "block";
+            
+            try {
+                const comms = await chargerCommentaires(arcId, 'arc');
+                commListe.innerHTML = "";
+                
+                if (comms.length === 0) {
+                    commListe.innerHTML = '<p class="aucun-commentaire">Aucun commentaire pour l\'instant.</p>';
+                    return;
+                }
+
+                comms.forEach(function (c) {
+                    const div = document.createElement("div");
+                    div.className = "commentaire-item";
+
+                    const meta = document.createElement("div");
+                    meta.className = "commentaire-meta";
+                    const date = new Date(c.created_at);
+                    meta.textContent = "Anonyme · " + date.toLocaleDateString('fr-FR');
+                    div.appendChild(meta);
+
+                    const contenu = document.createElement("div");
+                    contenu.className = "commentaire-contenu";
+                    contenu.textContent = c.contenu;
+                    div.appendChild(contenu);
+
+                    if (c.reponse_admin && c.reponse_admin.trim()) {
+                        const rep = document.createElement("div");
+                        rep.className = "reponse-admin";
+                        const label = document.createElement("span");
+                        label.className = "label";
+                        label.textContent = "Réponse de l'auteur";
+                        rep.appendChild(label);
+                        const txt = document.createElement("div");
+                        txt.className = "texte";
+                        txt.textContent = c.reponse_admin;
+                        rep.appendChild(txt);
+                        div.appendChild(rep);
+                    }
+                    commListe.appendChild(div);
+                });
+            } catch (err) {
+                console.error(err);
+                commListe.innerHTML = '<p class="aucun-commentaire">Erreur de chargement.</p>';
+            }
+        }
+
+        commForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const texte = commTextarea.value.trim();
+            if (!texte || !arc) return;
+
+            btnEnvoyer.disabled = true;
+            btnEnvoyer.textContent = "Envoi…";
+            msgComm.className = "message-commentaire";
+
+            try {
+                await ajouterCommentaire(arc.id, texte, 'arc');
+                commTextarea.value = "";
+                msgComm.textContent = "Merci ! Ton commentaire sera publié après validation.";
+                msgComm.className = "message-commentaire visible success";
+            } catch (err) {
+                msgComm.textContent = "Erreur : " + err.message;
+                msgComm.className = "message-commentaire visible error";
+            } finally {
+                btnEnvoyer.disabled = false;
+                btnEnvoyer.textContent = "Envoyer";
+            }
+        });
+
         // --- Actes ---
+        chargerCommentairesUI(arc.id);
         try {
             const actes = await chargerActesParArc(arc.id);
 

@@ -323,24 +323,27 @@ async function rechercherGlobalement(texte) {
 
 // --- Commentaires ---
 
-async function chargerCommentaires(acteId) {
-    const { data, error } = await sb
-        .from('commentaires')
-        .select('*')
-        .eq('acte_id', acteId)
-        .order('created_at', { ascending: true });
+async function chargerCommentaires(cibleId, type = 'acte') {
+    let query = sb.from('commentaires').select('*');
+    if (type === 'acte') query = query.eq('acte_id', cibleId);
+    else query = query.eq('arc_id', cibleId);
+    
+    const { data, error } = await query.order('created_at', { ascending: true });
     if (error) { console.error("Erreur chargerCommentaires :", error); throw error; }
     return data;
 }
 
-async function ajouterCommentaire(acteId, contenu) {
+async function ajouterCommentaire(cibleId, contenu, type = 'acte') {
+    const payload = {
+        contenu: contenu,
+        statut: 'en_attente'
+    };
+    if (type === 'acte') payload.acte_id = cibleId;
+    else payload.arc_id = cibleId;
+
     const { data, error } = await sb
         .from('commentaires')
-        .insert([{
-            acte_id: acteId,
-            contenu: contenu,
-            statut: 'en_attente'
-        }])
+        .insert([payload])
         .select()
         .single();
     if (error) { console.error("Erreur ajouterCommentaire :", error); throw error; }

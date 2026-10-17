@@ -377,11 +377,13 @@
             .reglages-btn { width: 46px; height: 46px; }
         }
 
-        /* ---- Commentaires ---- */
+        /* ---- Commentaires (version forcée) ---- */
         .commentaires-section {
-            margin-top: 60px;
+            margin-top: 50px;
+            margin-bottom: 60px;
             padding-top: 30px;
             border-top: 1px solid rgba(168, 168, 184, 0.15);
+            width: 100%;
         }
         .commentaires-titre {
             font-size: 18px;
@@ -436,6 +438,9 @@
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 20px;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
         }
         .commentaire-form label {
             display: block;
@@ -446,29 +451,32 @@
             margin-bottom: 10px;
         }
         .commentaire-form textarea {
-            width: 100%;
+            display: block;
+            width: 100% !important;
             min-height: 100px;
             padding: 14px;
-            background: var(--bg);
-            border: 1px solid var(--border);
+            background: var(--bg) !important;
+            border: 1px solid var(--border) !important;
             border-radius: 4px;
-            color: var(--text);
+            color: var(--text) !important;
             font-family: Georgia, serif;
             font-size: 15px;
             line-height: 1.6;
             resize: vertical;
             margin-bottom: 14px;
+            box-sizing: border-box;
         }
         .commentaire-form textarea:focus {
             outline: none;
-            border-color: var(--red);
+            border-color: var(--red) !important;
         }
         .commentaire-form button {
+            display: inline-block;
             padding: 10px 24px;
-            background: var(--card-bg);
-            border: 1px solid var(--silver-soft);
+            background: var(--card-bg) !important;
+            border: 1px solid var(--silver-soft) !important;
             border-radius: 4px;
-            color: var(--heading);
+            color: var(--heading) !important;
             font-family: Georgia, serif;
             font-size: 13px;
             letter-spacing: 2px;
@@ -477,13 +485,9 @@
             transition: all 0.2s ease;
         }
         .commentaire-form button:hover {
-            background: var(--card-hover);
-            border-color: var(--red-bright);
-            color: var(--red-bright);
-        }
-        .commentaire-form button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            background: var(--card-hover) !important;
+            border-color: var(--red-bright) !important;
+            color: var(--red-bright) !important;
         }
         .message-commentaire {
             display: none;
@@ -1063,7 +1067,7 @@
             commForm.style.display = "block";
             
             try {
-                const comms = await chargerCommentaires(acteId);
+                const comms = await chargerCommentaires(acteId, 'acte');
                 commListe.innerHTML = "";
                 
                 if (comms.length === 0) {
@@ -1121,7 +1125,7 @@
             msgComm.className = "message-commentaire";
 
             try {
-                await ajouterCommentaire(acteEnCours.id, texte);
+                await ajouterCommentaire(acteEnCours.id, texte, 'acte');
                 commTextarea.value = "";
                 msgComm.textContent = "Merci ! Ton commentaire sera publié après validation.";
                 msgComm.className = "message-commentaire visible success";
@@ -1179,7 +1183,7 @@
         // Charge les commentaires pour cet acte
         chargerCommentairesUI(acte.id);
         msgComm.className = "message-commentaire";
-        
+
         window.scrollTo({ top: 0, behavior: "instant" });
     }
 
