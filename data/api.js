@@ -320,3 +320,29 @@ async function rechercherGlobalement(texte) {
         actes: resActes.data || []
     };
 }
+
+// --- Commentaires ---
+
+async function chargerCommentaires(acteId) {
+    const { data, error } = await sb
+        .from('commentaires')
+        .select('*')
+        .eq('acte_id', acteId)
+        .order('created_at', { ascending: true });
+    if (error) { console.error("Erreur chargerCommentaires :", error); throw error; }
+    return data;
+}
+
+async function ajouterCommentaire(acteId, contenu) {
+    const { data, error } = await sb
+        .from('commentaires')
+        .insert([{
+            acte_id: acteId,
+            contenu: contenu,
+            statut: 'en_attente'
+        }])
+        .select()
+        .single();
+    if (error) { console.error("Erreur ajouterCommentaire :", error); throw error; }
+    return data;
+}

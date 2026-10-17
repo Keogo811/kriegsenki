@@ -377,6 +377,138 @@
             .reglages-btn { width: 46px; height: 46px; }
         }
 
+        /* ---- Commentaires ---- */
+        .commentaires-section {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(168, 168, 184, 0.15);
+        }
+        .commentaires-titre {
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-bottom: 24px;
+        }
+        .commentaire-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--silver-soft);
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+        }
+        .commentaire-meta {
+            font-size: 12px;
+            color: var(--text-soft);
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .commentaire-contenu {
+            font-size: 16px;
+            color: var(--text);
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+        .reponse-admin {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: rgba(140, 26, 40, 0.1);
+            border-left: 2px solid var(--red);
+            border-radius: 3px;
+        }
+        .reponse-admin .label {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--red-bright);
+            margin-bottom: 4px;
+            display: block;
+        }
+        .reponse-admin .texte {
+            font-size: 15px;
+            color: var(--heading);
+            white-space: pre-line;
+        }
+        .commentaire-form {
+            margin-top: 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 20px;
+        }
+        .commentaire-form label {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--silver);
+            margin-bottom: 10px;
+        }
+        .commentaire-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: Georgia, serif;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+            margin-bottom: 14px;
+        }
+        .commentaire-form textarea:focus {
+            outline: none;
+            border-color: var(--red);
+        }
+        .commentaire-form button {
+            padding: 10px 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--silver-soft);
+            border-radius: 4px;
+            color: var(--heading);
+            font-family: Georgia, serif;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .commentaire-form button:hover {
+            background: var(--card-hover);
+            border-color: var(--red-bright);
+            color: var(--red-bright);
+        }
+        .commentaire-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .message-commentaire {
+            display: none;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .message-commentaire.visible { display: block; }
+        .message-commentaire.success {
+            background: rgba(160, 184, 208, 0.1);
+            border-left: 3px solid var(--alice);
+            color: var(--alice);
+        }
+        .message-commentaire.error {
+            background: rgba(140, 26, 40, 0.15);
+            border-left: 3px solid var(--red-bright);
+            color: #e0a8a8;
+        }
+        .aucun-commentaire {
+            color: var(--text-soft);
+            font-style: italic;
+            font-size: 15px;
+        }
+
         #backToTop {
             position: fixed;
             bottom: 26px; right: 26px;
@@ -627,6 +759,19 @@
         <p class="loading">Chargement du texte…</p>
     </div>
     <div class="acte-nav" id="acte-nav"></div>
+    <section class="commentaires-section" id="commentaires-section">
+        <div class="commentaires-titre">Commentaires</div>
+        <div id="commentaires-liste">
+            <p class="aucun-commentaire">Chargement…</p>
+        </div>
+        
+        <form class="commentaire-form" id="commentaire-form" style="display:none;">
+            <label for="nouveau-commentaire">Laisser un commentaire anonyme</label>
+            <textarea id="nouveau-commentaire" placeholder="Ton message ici... (Les commentaires sont modérés avant publication.)" required></textarea>
+            <button type="submit" id="btn-envoyer-commentaire">Envoyer</button>
+            <div class="message-commentaire" id="message-commentaire"></div>
+        </form>
+    </section>
 </main>
 
 <!-- DÉCORATION BAS -->
@@ -905,6 +1050,90 @@
             navContainer.appendChild(creerLienNav(acteSuiv, "next"));
         }
 
+        // --- Commentaires ---
+        const commSection = document.getElementById("commentaires-section");
+        const commListe = document.getElementById("commentaires-liste");
+        const commForm = document.getElementById("commentaire-form");
+        const commTextarea = document.getElementById("nouveau-commentaire");
+        const btnEnvoyer = document.getElementById("btn-envoyer-commentaire");
+        const msgComm = document.getElementById("message-commentaire");
+
+        async function chargerCommentairesUI(acteId) {
+            commListe.innerHTML = '<p class="aucun-commentaire">Chargement…</p>';
+            commForm.style.display = "block";
+            
+            try {
+                const comms = await chargerCommentaires(acteId);
+                commListe.innerHTML = "";
+                
+                if (comms.length === 0) {
+                    commListe.innerHTML = '<p class="aucun-commentaire">Aucun commentaire pour l\'instant. Sois le premier !</p>';
+                    return;
+                }
+
+                comms.forEach(function (c) {
+                    const div = document.createElement("div");
+                    div.className = "commentaire-item";
+
+                    const meta = document.createElement("div");
+                    meta.className = "commentaire-meta";
+                    const date = new Date(c.created_at);
+                    meta.textContent = "Anonyme · " + date.toLocaleDateString('fr-FR') + " à " + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    div.appendChild(meta);
+
+                    const contenu = document.createElement("div");
+                    contenu.className = "commentaire-contenu";
+                    contenu.textContent = c.contenu;
+                    div.appendChild(contenu);
+
+                    if (c.reponse_admin && c.reponse_admin.trim()) {
+                        const rep = document.createElement("div");
+                        rep.className = "reponse-admin";
+                        
+                        const label = document.createElement("span");
+                        label.className = "label";
+                        label.textContent = "Réponse de l'auteur";
+                        rep.appendChild(label);
+                        
+                        const txt = document.createElement("div");
+                        txt.className = "texte";
+                        txt.textContent = c.reponse_admin;
+                        rep.appendChild(txt);
+                        
+                        div.appendChild(rep);
+                    }
+
+                    commListe.appendChild(div);
+                });
+            } catch (err) {
+                console.error(err);
+                commListe.innerHTML = '<p class="aucun-commentaire">Impossible de charger les commentaires.</p>';
+            }
+        }
+
+        commForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const texte = commTextarea.value.trim();
+            if (!texte || !acteEnCours) return;
+
+            btnEnvoyer.disabled = true;
+            btnEnvoyer.textContent = "Envoi…";
+            msgComm.className = "message-commentaire";
+
+            try {
+                await ajouterCommentaire(acteEnCours.id, texte);
+                commTextarea.value = "";
+                msgComm.textContent = "Merci ! Ton commentaire sera publié après validation.";
+                msgComm.className = "message-commentaire visible success";
+            } catch (err) {
+                msgComm.textContent = "Erreur : " + err.message;
+                msgComm.className = "message-commentaire visible error";
+            } finally {
+                btnEnvoyer.disabled = false;
+                btnEnvoyer.textContent = "Envoyer";
+            }
+        });
+
         // --- Affichage du texte ---
         texteEl.innerHTML = "";
 
@@ -947,6 +1176,10 @@
             });
         }
 
+        // Charge les commentaires pour cet acte
+        chargerCommentairesUI(acte.id);
+        msgComm.className = "message-commentaire";
+        
         window.scrollTo({ top: 0, behavior: "instant" });
     }
 
