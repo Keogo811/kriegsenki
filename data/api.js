@@ -289,3 +289,34 @@ async function chargerArcsPourArbre() {
     if (error) { console.error("Erreur chargerArcsPourArbre :", error); throw error; }
     return data;
 }
+
+async function rechercherGlobalement(texte) {
+    if (!texte || texte.trim().length < 2) {
+        return { arcs: [], actes: [] };
+    }
+    
+    const q = '%' + texte.trim() + '%';
+    
+    // On cherche dans les arcs (titre, description)
+    const reqArcs = sb
+        .from('arcs')
+        .select('id, titre, description')
+        .neq('statut', 'brouillon')
+        .ilike('titre', q)
+        .limit(5);
+
+    // On cherche dans les actes (titre)
+    const reqActes = sb
+        .from('actes')
+        .select('id, titre, arc_id')
+        .neq('statut', 'brouillon')
+        .ilike('titre', q)
+        .limit(8);
+
+    const [resArcs, resActes] = await Promise.all([reqArcs, reqActes]);
+
+    return {
+        arcs: resArcs.data || [],
+        actes: resActes.data || []
+    };
+}
