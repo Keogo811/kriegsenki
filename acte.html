@@ -289,6 +289,94 @@
             font-style: italic;
         }
 
+        /* ---- Réglages de lecture ---- */
+        body.theme-sepia {
+            --bg: #f4ecd8; --bg-soft: #e8dcc8; --card-bg: #eaddca; --text: #433422;
+            --text-soft: #7a6b5d; --heading: #5a4532; --silver: #8c7a68;
+            --silver-soft: #b8a898; --border: rgba(67, 52, 34, 0.15);
+        }
+        body.theme-light {
+            --bg: #f8f9fa; --bg-soft: #e9ecef; --card-bg: #ffffff; --text: #212529;
+            --text-soft: #6c757d; --heading: #343a40; --silver: #adb5bd;
+            --silver-soft: #ced4da; --border: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* En mode clair/sépia, on cache les éclats et on éclaircit les brisures */
+        body.theme-sepia .shards-bg, body.theme-light .shards-bg { display: none; }
+        body.theme-sepia .mirror-strip path[fill^="url"], body.theme-light .mirror-strip path[fill^="url"] { fill: transparent; }
+        body.theme-sepia .mirror-strip path[stroke="#e8e8f4"], body.theme-light .mirror-strip path[stroke="#e8e8f4"] { stroke: var(--border); }
+        body.theme-sepia .lycoris use, body.theme-light .lycoris use { opacity: 0.3; }
+        
+        body.font-small .texte p, body.font-small .texte-html p { font-size: 16px; }
+        body.font-normal .texte p, body.font-normal .texte-html p { font-size: 19px; }
+        body.font-large .texte p, body.font-large .texte-html p { font-size: 23px; line-height: 1.9; }
+
+        body.width-narrow main { max-width: 720px; }
+        body.width-wide main { max-width: 950px; }
+
+        /* Panneau flottant */
+        .reglages-wrap {
+            position: fixed;
+            bottom: 26px; left: 26px;
+            z-index: 100;
+            font-family: Georgia, serif;
+        }
+        .reglages-btn {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: rgba(30, 24, 38, 0.9);
+            border: 1px solid var(--silver-soft);
+            color: var(--silver);
+            font-size: 20px;
+            cursor: pointer;
+            transition: border-color 0.25s ease, color 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .reglages-btn:hover { border-color: var(--red-bright); color: var(--red-bright); }
+        
+        .reglages-panel {
+            position: absolute;
+            bottom: 60px; left: 0;
+            width: 240px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .reglages-panel.visible { display: flex; }
+        
+        .reglage-ligne {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .reglage-options { display: flex; gap: 4px; }
+        .reglage-opt {
+            padding: 4px 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .reglage-opt:hover { border-color: var(--silver-soft); }
+        .reglage-opt.actif { border-color: var(--red-bright); color: var(--red-bright); }
+
+        @media (max-width: 800px) {
+            .reglages-wrap { bottom: 18px; left: 18px; }
+            .reglages-btn { width: 46px; height: 46px; }
+        }
+
         #backToTop {
             position: fixed;
             bottom: 26px; right: 26px;
@@ -664,6 +752,36 @@
     <svg class="lycoris b4 small" viewBox="0 0 100 100"><use href="#lycoris-mini"/></svg>
 </div>
 
+<!-- RÉGLAGES DE LECTURE -->
+<div class="reglages-wrap" id="reglages-wrap">
+    <button class="reglages-btn" id="reglages-btn" aria-label="Réglages de lecture">Aa</button>
+    <div class="reglages-panel" id="reglages-panel">
+        <div class="reglage-ligne">
+            <span>Thème</span>
+            <div class="reglage-options">
+                <button class="reglage-opt" data-type="theme" data-val="dark">Sombre</button>
+                <button class="reglage-opt" data-type="theme" data-val="sepia">Sépia</button>
+                <button class="reglage-opt" data-type="theme" data-val="light">Clair</button>
+            </div>
+        </div>
+        <div class="reglage-ligne">
+            <span>Taille</span>
+            <div class="reglage-options">
+                <button class="reglage-opt" data-type="font" data-val="small">Petit</button>
+                <button class="reglage-opt" data-type="font" data-val="normal">Normal</button>
+                <button class="reglage-opt" data-type="font" data-val="large">Grand</button>
+            </div>
+        </div>
+        <div class="reglage-ligne">
+            <span>Largeur</span>
+            <div class="reglage-options">
+                <button class="reglage-opt" data-type="width" data-val="narrow">Étroit</button>
+                <button class="reglage-opt" data-type="width" data-val="wide">Large</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- BOUTON RETOUR EN HAUT -->
 <button id="backToTop" aria-label="Retour en haut">↑</button>
 
@@ -834,6 +952,78 @@
 
     afficherActe();
     window.addEventListener("hashchange", afficherActe);
+
+    // ---- Réglages de lecture ----
+    (function initReglages() {
+        const wrap = document.getElementById('reglages-wrap');
+        if (!wrap) return;
+
+        const btn = document.getElementById('reglages-btn');
+        const panel = document.getElementById('reglages-panel');
+        const opts = panel.querySelectorAll('.reglage-opt');
+
+        // Valeurs par défaut
+        const defaults = { theme: 'dark', font: 'normal', width: 'narrow' };
+        
+        // Charge les préférences
+        let prefs = { ...defaults };
+        try {
+            const saved = localStorage.getItem('kriegsenki_reglages');
+            if (saved) prefs = { ...defaults, ...JSON.parse(saved) };
+        } catch (e) {}
+
+        function appliquer() {
+            // Enlève les anciennes classes
+            document.body.classList.remove('theme-sepia', 'theme-light', 'font-small', 'font-large', 'width-wide');
+            
+            // Applique les nouvelles
+            if (prefs.theme === 'sepia') document.body.classList.add('theme-sepia');
+            if (prefs.theme === 'light') document.body.classList.add('theme-light');
+            
+            if (prefs.font === 'small') document.body.classList.add('font-small');
+            if (prefs.font === 'large') document.body.classList.add('font-large');
+            
+            if (prefs.width === 'wide') document.body.classList.add('width-wide');
+
+            // Met à jour l'état visuel des boutons
+            opts.forEach(o => {
+                const type = o.dataset.type;
+                const val = o.dataset.val;
+                if (prefs[type] === val) {
+                    o.classList.add('actif');
+                } else {
+                    o.classList.remove('actif');
+                }
+            });
+        }
+
+        // Au démarrage
+        appliquer();
+
+        // Clic sur le bouton "Aa"
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            panel.classList.toggle('visible');
+        });
+
+        // Fermer si on clique ailleurs
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target)) {
+                panel.classList.remove('visible');
+            }
+        });
+
+        // Clic sur une option
+        opts.forEach(o => {
+            o.addEventListener('click', function () {
+                const type = this.dataset.type;
+                const val = this.dataset.val;
+                prefs[type] = val;
+                localStorage.setItem('kriegsenki_reglages', JSON.stringify(prefs));
+                appliquer();
+            });
+        });
+    })();
 
     // Bouton retour en haut
     const btn = document.getElementById('backToTop');
