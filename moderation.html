@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modération — Krieg Senki</title>
+    <style>
+        :root {
+            --bg: #17131d; --card-bg: #1c1624; --card-hover: #241d2e;
+            --text: #cdc2b8; --text-soft: #8a8088; --heading: #c8bcb4;
+            --silver: #a8a8b8; --silver-soft: #807f8c; --red: #8c1a28;
+            --red-bright: #b01828; --mauve: #8a6a88; --alice: #a0b8d0;
+            --border: rgba(168, 168, 184, 0.2);
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 16px; line-height: 1.6; min-height: 100vh;
+        }
+        header {
+            background: var(--card-bg); border-bottom: 1px solid var(--border);
+            padding: 14px 24px; display: flex; justify-content: space-between;
+            align-items: center; position: sticky; top: 0; z-index: 100;
+            flex-wrap: wrap; gap: 12px;
+        }
+        .header-titre { font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--heading); }
+        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .header-user { font-size: 13px; color: var(--text-soft); font-style: italic; }
+        .btn {
+            display: inline-block; padding: 8px 16px; background: var(--card-bg);
+            border: 1px solid var(--silver-soft); border-radius: 3px;
+            color: var(--heading); font-family: Georgia, serif; font-size: 13px;
+            letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+            text-decoration: none; transition: 0.2s ease;
+        }
+        .btn:hover { background: var(--card-hover); border-color: var(--red-bright); color: var(--red-bright); }
+        .btn.small { padding: 5px 10px; font-size: 11px; }
+        .btn.primary { border-color: var(--red); color: var(--red-bright); }
+        .btn.primary:hover { background: rgba(140, 26, 40, 0.15); }
+
+        main { max-width: 900px; margin: 0 auto; padding: 30px 24px 60px; }
+        
+        .filtres { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .filtres button {
+            padding: 6px 14px; background: transparent; border: 1px solid var(--border);
+            border-radius: 999px; color: var(--text-soft); cursor: pointer;
+            font-family: Georgia, serif; font-size: 13px; transition: 0.2s;
+        }
+        .filtres button:hover { border-color: var(--silver-soft); color: var(--text); }
+        .filtres button.actif { background: rgba(140, 26, 40, 0.2); border-color: var(--red); color: #ffd0d6; }
+
+        .comm-bloc {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 6px; margin-bottom: 20px; overflow: hidden;
+        }
+        .comm-header {
+            padding: 12px 18px; background: rgba(168, 168, 184, 0.05);
+            border-bottom: 1px solid var(--border); display: flex;
+            justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .comm-cible { font-size: 13px; color: var(--silver); }
+        .comm-cible strong { color: var(--heading); }
+        .comm-date { font-size: 12px; color: var(--text-soft); font-family: Consolas, monospace; }
+        .comm-corps { padding: 18px; font-size: 16px; white-space: pre-line; }
+        .comm-reponse-actuelle {
+            margin: 0 18px 18px; padding: 12px; background: rgba(160, 184, 208, 0.1);
+            border-left: 3px solid var(--alice); border-radius: 3px; font-size: 14px;
+        }
+        .comm-actions {
+            padding: 14px 18px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px; flex-wrap: wrap; background: rgba(0,0,0,0.15);
+        }
+        .comm-reponse-zone { display: none; padding: 18px; border-top: 1px solid var(--border); }
+        .comm-reponse-zone.visible { display: block; }
+        .comm-reponse-zone textarea {
+            width: 100%; min-height: 80px; padding: 12px; margin-bottom: 12px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+            color: var(--text); font-family: Georgia, serif; font-size: 14px;
+            resize: vertical;
+        }
+        .comm-reponse-zone textarea:focus { outline: none; border-color: var(--red); }
+        
+        .statut-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 3px;
+            font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .statut-badge.en_attente { background: rgba(138, 106, 136, 0.2); color: var(--mauve); }
+        .statut-badge.approuve { background: rgba(160, 184, 208, 0.15); color: var(--alice); }
+        .statut-badge.rejete { background: rgba(140, 26, 40, 0.2); color: var(--red-bright); }
+        
+        .vide { text-align: center; color: var(--text-soft); font-style: italic; padding: 40px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-titre">Modération</div>
+    <div class="header-actions">
+        <span class="header-user" id="header-user"></span>
+        <a href="dashboard.html" class="btn small">Retour au dashboard</a>
+        <button class="btn small" id="logout-btn">Déconnexion</button>
+    </div>
+</header>
+
+<main>
+    <div class="filtres" id="filtres">
+        <button data-filtre="en_attente" class="actif">En attente</button>
+        <button data-filtre="approuve">Approuvés</button>
+        <button data-filtre="rejete">Rejetés</button>
+        <button data-filtre="tous">Tous</button>
+    </div>
+
+    <div id="liste">
+        <p class="vide">Chargement…</p>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/config.js"></script>
+<script src="data/api.js"></script>
+<script>
+    const listeEl = document.getElementById("liste");
+    const headerUser = document.getElementById("header-user");
+    let tousLesComms = [];
+    let filtreActif = "en_attente";
+
+    async function verifierAuth() {
+        const { data } = await sb.auth.getSession();
+        if (!data || !data.session || !data.session.user) {
+            window.location.replace("admin.html");
+            return null;
+        }
+        return data.session.user;
+    }
+
+    async function charger() {
+        listeEl.innerHTML = '<p class="vide">Chargement…</p>';
+        try {
+            tousLesComms = await chargerTousCommentaires();
+            afficher();
+        } catch (err) {
+            console.error(err);
+            listeEl.innerHTML = '<p class="vide">Erreur de chargement.</p>';
+        }
+    }
+
+    function afficher() {
+        listeEl.innerHTML = "";
+        
+        let filtres = tousLesComms;
+        if (filtreActif !== "tous") {
+            filtres = filtres.filter(c => c.statut === filtreActif);
+        }
+
+        if (filtres.length === 0) {
+            listeEl.innerHTML = '<p class="vide">Aucun commentaire dans cette catégorie.</p>';
+            return;
+        }
+
+        filtres.forEach(comm => {
+            listeEl.appendChild(construireBloc(comm));
+        });
+    }
+
+    function construireBloc(comm) {
+        const bloc = document.createElement("div");
+        bloc.className = "comm-bloc";
+
+        // En-tête (cible et date)
+        const header = document.createElement("div");
+        header.className = "comm-header";
+        
+        const cible = document.createElement("div");
+        cible.className = "comm-cible";
+        if (comm.arc_id) {
+            const titreArc = comm.arcs ? comm.arcs.titre : "Arc inconnu";
+            cible.innerHTML = `Commentaire sur l'arc : <strong>${titreArc}</strong>`;
+        } else if (comm.acte_id) {
+            const titreActe = comm.actes ? comm.actes.titre : "Acte inconnu";
+            const titreArc = comm.actes && comm.actes.arcs ? comm.actes.arcs.titre : "";
+            cible.innerHTML = `Commentaire sur l'acte : <strong>${titreActe}</strong> ${titreArc ? `(Arc : ${titreArc})` : ''}`;
+        }
+        header.appendChild(cible);
+
+        const date = document.createElement("div");
+        date.className = "comm-date";
+        const d = new Date(comm.created_at);
+        date.textContent = d.toLocaleDateString('fr-FR') + " à " + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        header.appendChild(date);
+
+        const badge = document.createElement("span");
+        badge.className = "statut-badge " + comm.statut;
+        badge.textContent = comm.statut.replace("_", " ");
+        header.appendChild(badge);
+
+        bloc.appendChild(header);
+
+        // Corps
+        const corps = document.createElement("div");
+        corps.className = "comm-corps";
+        corps.textContent = comm.contenu;
+        bloc.appendChild(corps);
+
+        // Réponse actuelle (si elle existe)
+        if (comm.reponse_admin && comm.reponse_admin.trim()) {
+            const rep = document.createElement("div");
+            rep.className = "comm-reponse-actuelle";
+            const label = document.createElement("strong");
+            label.textContent = "Votre réponse : ";
+            rep.appendChild(label);
+            rep.appendChild(document.createTextNode(comm.reponse_admin));
+            bloc.appendChild(rep);
+        }
+
+        // Actions
+        const actions = document.createElement("div");
+        actions.className = "comm-actions";
+
+        if (comm.statut !== "approuve") {
+            const btnApprouver = document.createElement("button");
+            btnApprouver.className = "btn small primary";
+            btnApprouver.textContent = "Approuver";
+            btnApprouver.onclick = async () => {
+                try {
+                    await changerStatutCommentaire(comm.id, "approuve");
+                    await charger();
+                } catch (err) { alert(err.message); }
+            };
+            actions.appendChild(btnApprouver);
+        }
+
+        if (comm.statut !== "rejete") {
+            const btnRejeter = document.createElement("button");
+            btnRejeter.className = "btn small";
+            btnRejeter.textContent = "Rejeter";
+            btnRejeter.onclick = async () => {
+                if (!confirm("Rejeter ce commentaire ? Il ne sera jamais visible.")) return;
+                try {
+                    await changerStatutCommentaire(comm.id, "rejete");
+                    await charger();
+                } catch (err) { alert(err.message); }
+            };
+            actions.appendChild(btnRejeter);
+        }
+
+        const btnRepondre = document.createElement("button");
+        btnRepondre.className = "btn small";
+        btnRepondre.textContent = "Répondre";
+        actions.appendChild(btnRepondre);
+
+        bloc.appendChild(actions);
+
+        // Zone de réponse (cachée par défaut)
+        const zoneRep = document.createElement("div");
+        zoneRep.className = "comm-reponse-zone";
+        
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "Votre réponse d'auteur...";
+        textarea.value = comm.reponse_admin || "";
+        zoneRep.appendChild(textarea);
+
+        const btnEnvoyerRep = document.createElement("button");
+        btnEnvoyerRep.className = "btn small primary";
+        btnEnvoyerRep.textContent = "Enregistrer la réponse";
+        btnEnvoyerRep.onclick = async () => {
+            const txt = textarea.value.trim();
+            if (!txt) { alert("La réponse ne peut pas être vide."); return; }
+            btnEnvoyerRep.disabled = true;
+            btnEnvoyerRep.textContent = "Envoi…";
+            try {
+                await sauvegarderReponseCommentaire(comm.id, txt);
+                await charger();
+            } catch (err) {
+                alert(err.message);
+                btnEnvoyerRep.disabled = false;
+                btnEnvoyerRep.textContent = "Enregistrer la réponse";
+            }
+        };
+        zoneRep.appendChild(btnEnvoyerRep);
+
+        bloc.appendChild(zoneRep);
+
+        btnRepondre.onclick = () => {
+            zoneRep.classList.toggle("visible");
+        };
+
+        return bloc;
+    }
+
+    // Gestion des filtres
+    document.querySelectorAll("#filtres button").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.querySelectorAll("#filtres button").forEach(b => b.classList.remove("actif"));
+            this.classList.add("actif");
+            filtreActif = this.dataset.filtre;
+            afficher();
+        });
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+        await sb.auth.signOut();
+        window.location.replace("admin.html");
+    });
+
+    (async function init() {
+        const user = await verifierAuth();
+        if (!user) return;
+        headerUser.textContent = user.email;
+        await charger();
+    })();
+</script>
+
+</body>
+</html>

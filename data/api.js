@@ -349,3 +349,34 @@ async function ajouterCommentaire(cibleId, contenu, type = 'acte') {
     if (error) { console.error("Erreur ajouterCommentaire :", error); throw error; }
     return data;
 }
+
+// --- Modération ---
+
+async function chargerTousCommentaires() {
+    const { data, error } = await sb
+        .from('commentaires')
+        .select(`
+            *,
+            arcs (titre),
+            actes (titre, arc_id)
+        `)
+        .order('created_at', { ascending: false });
+    if (error) { console.error("Erreur chargerTousCommentaires :", error); throw error; }
+    return data;
+}
+
+async function changerStatutCommentaire(id, statut) {
+    const { error } = await sb
+        .from('commentaires')
+        .update({ statut: statut })
+        .eq('id', id);
+    if (error) { console.error("Erreur changerStatutCommentaire :", error); throw error; }
+}
+
+async function sauvegarderReponseCommentaire(id, reponse) {
+    const { error } = await sb
+        .from('commentaires')
+        .update({ reponse_admin: reponse, statut: 'approuve' })
+        .eq('id', id);
+    if (error) { console.error("Erreur sauvegarderReponseCommentaire :", error); throw error; }
+}
